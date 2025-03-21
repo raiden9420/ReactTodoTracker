@@ -9,7 +9,7 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
 export async function suggestGoals(subjects: string[], skills: string, interests: string, count: number = 2): Promise<string[]> {
   try {
     // Get the generative model
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     
     // Format subjects as a comma-separated string
     const subjectsString = subjects.join(", ");
