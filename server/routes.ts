@@ -1,8 +1,9 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { surveySchema } from "@shared/schema";
+import { surveySchema, goalSchema, createGoalSchema, updateGoalSchema } from "@shared/schema";
 import { z } from "zod";
+import { suggestGoals } from "./gemini";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here
@@ -128,17 +129,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Get the user's learning goals
+      const userGoals = await storage.getGoals(userId);
+      
+      // Transform goals to match the dashboard format
+      const formattedGoals = userGoals.map(goal => ({
+        id: goal.id,
+        title: goal.task,
+        completed: goal.completed,
+        progress: goal.completed ? 100 : 0
+      }));
+      
       // Generate dashboard data based on user profile
-      // This is where we would normally do personalization based on the profile
       const dashboardData = {
         username: (await storage.getUser(userId))?.username || "User",
         progress: 25, // Sample progress percentage
-        goals: [
-          { id: "1", title: "Complete career assessment", completed: true, progress: 100 },
-          { id: "2", title: "Explore recommended careers", completed: false, progress: 30 },
-          { id: "3", title: "Research education pathways", completed: false, progress: 0 },
-          { id: "4", title: "Set up informational interviews", completed: false, progress: 0 }
-        ],
+        goals: formattedGoals,
         trendingTopics: generateTrendingTopics(profile.subjects),
         activities: [
           { id: "1", type: "badge", title: "Career Explorer", time: "2 days ago", isRecent: true },
@@ -160,6 +166,197 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ 
         success: false, 
         message: "Failed to get dashboard data" 
+      });
+    }
+  });
+  
+  // Goals API endpoints
+  
+  // GET AI-suggested goals (must be before the general /goals/:userId route to avoid conflict)
+  app.get("/api/goals/suggest/:userId", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId, 10);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid user ID" 
+        });
+      }
+      
+      // Get the user profile to create personalized suggestions
+      const profile = await storage.getUserProfile(userId);
+      
+      if (!profile) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User profile not found" 
+        });
+      }
+      
+      // Generate goal suggestions using Gemini AI
+      const suggestions = await suggestGoals(
+        profile.subjects,
+        profile.skills,
+        profile.interests,
+        2 // Number of suggestions to generate
+      );
+      
+      // If suggestions could not be generated, return a helpful message
+      if (!suggestions || suggestions.length === 0) {
+        return res.status(500).json({
+          success: false,
+          message: "Could not generate goal suggestions at this time"
+        });
+      }
+      
+      // Create the goals in the database
+      const createdGoals = await Promise.all(
+        suggestions.map(task => 
+          storage.createGoal({
+            task,
+            completed: false,
+            userId
+          })
+        )
+      );
+      
+      return res.status(200).json({
+        success: true,
+        message: "Goal suggestions generated successfully",
+        data: createdGoals
+      });
+    } catch (error) {
+      console.error("Error generating goal suggestions:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Failed to generate goal suggestions" 
+      });
+    }
+  });
+  
+  // GET all goals for a user
+  app.get("/api/goals/:userId", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId, 10);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid user ID" 
+        });
+      }
+      
+      const goals = await storage.getGoals(userId);
+      
+      return res.status(200).json({
+        success: true,
+        data: goals
+      });
+    } catch (error) {
+      console.error("Error getting goals:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Failed to get goals" 
+      });
+    }
+  });
+  
+  // POST create a new goal
+  app.post("/api/goals", async (req: Request, res: Response) => {
+    try {
+      // Validate request body
+      const validatedData = createGoalSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid goal data", 
+          errors: validatedData.error.flatten() 
+        });
+      }
+      
+      // Create the goal
+      const newGoal = await storage.createGoal(validatedData.data);
+      
+      return res.status(201).json({
+        success: true,
+        message: "Goal created successfully",
+        data: newGoal
+      });
+    } catch (error) {
+      console.error("Error creating goal:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Failed to create goal" 
+      });
+    }
+  });
+  
+  // PUT update a goal
+  app.put("/api/goals/:id", async (req: Request, res: Response) => {
+    try {
+      const goalId = req.params.id;
+      
+      // Validate request body
+      const validatedData = updateGoalSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid goal update data", 
+          errors: validatedData.error.flatten() 
+        });
+      }
+      
+      // Update the goal
+      const updatedGoal = await storage.updateGoal(goalId, validatedData.data);
+      
+      if (!updatedGoal) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Goal not found" 
+        });
+      }
+      
+      return res.status(200).json({
+        success: true,
+        message: "Goal updated successfully",
+        data: updatedGoal
+      });
+    } catch (error) {
+      console.error("Error updating goal:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Failed to update goal" 
+      });
+    }
+  });
+  
+  // DELETE a goal
+  app.delete("/api/goals/:id", async (req: Request, res: Response) => {
+    try {
+      const goalId = req.params.id;
+      
+      // Delete the goal
+      const success = await storage.deleteGoal(goalId);
+      
+      if (!success) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Goal not found" 
+        });
+      }
+      
+      return res.status(200).json({
+        success: true,
+        message: "Goal deleted successfully"
+      });
+    } catch (error) {
+      console.error("Error deleting goal:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Failed to delete goal" 
       });
     }
   });
