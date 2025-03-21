@@ -4,9 +4,9 @@ import sqlite3 from 'sqlite3';
 const db = new sqlite3.Database('emerge.db');
 
 db.serialize(() => {
-  // Drop existing tables if they exist
-  db.run('DROP TABLE IF EXISTS goals');
+  // Drop existing tables
   db.run('DROP TABLE IF EXISTS users');
+  db.run('DROP TABLE IF EXISTS goals');
 
   // Create users table with all required fields
   db.run(`CREATE TABLE IF NOT EXISTS users (
@@ -30,6 +30,7 @@ db.serialize(() => {
     user_id INTEGER,
     FOREIGN KEY(user_id) REFERENCES users(id)
   )`);
-});
 
-db.close();
+  console.log('Database tables created successfully');
+  db.close();
+});
