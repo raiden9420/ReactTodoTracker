@@ -135,7 +135,7 @@ export default function Dashboard() {
 
         {/* Dashboard Content */}
         <div className="p-4 sm:p-6 space-y-6">
-          <WelcomeSection username={profile.name} progress={profile.progress} />
+          <WelcomeSection username={profile.name} progress={profile.progress} avatar={profile.avatar} />
 
           {/* Dashboard Grids */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
