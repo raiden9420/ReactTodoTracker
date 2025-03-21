@@ -85,17 +85,6 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
           queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
         }, 500);
       }
-    } catch (error) {
-      console.error('Error toggling goal:', error);
-    } finally {
-      setIsLoading(false);
-    }
-          await apiRequest(`/api/goals/${goalId}`, {
-            method: 'DELETE'
-          });
-          queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
-        }, 500);
-      }
 
       // Invalidate goals cache to refresh
       queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
