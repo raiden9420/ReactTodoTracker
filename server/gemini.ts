@@ -18,10 +18,19 @@ export async function suggestGoals(subjects: string[], skills: string, interests
     const prompt = `Suggest 1 specific and actionable career development goal focused on the subjects: ${subjectsString}
 Consider these aspects - Current Skills: ${skills}, Interests: ${interests}
 
-Based on the user's thinking style and career goals, adjust the difficulty and complexity of the task accordingly.
+Based on the user's thinking style and career goals, suggest varied career development activities like:
+- Industry research and analysis
+- Skill-building exercises
+- Portfolio development
+- Professional networking
+- Personal branding
+- Technical learning
+- Career exploration
 
 Requirements for goals:
 - Must be achievable in 1-2 hours
+- Should be specific and actionable
+- Vary between different types of activities
 - Focus on career exploration and professional development in the subject field
 - Should help understand career paths and opportunities
 - Include industry-relevant skills or knowledge
