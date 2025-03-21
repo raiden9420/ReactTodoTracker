@@ -465,10 +465,13 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
 // Helper function to generate trending topics based on user's subjects
 async function validateRequest(req: any, res: any, next: any) {
   try {
-    next();
+    await next();
   } catch (error) {
-    console.error('Database error:', error);
-    res.status(500).json({ success: false, message: "Database error", error });
+    console.error('Request validation error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error instanceof Error ? error.message : "Unknown error occurred"
+    });
   }
 }
 

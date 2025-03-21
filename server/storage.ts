@@ -1,11 +1,13 @@
 
 import sqlite3 from 'sqlite3';
 
-const db = new sqlite3.Database('emerge.db', (err) => {
+const db = new sqlite3.Database('emerge.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
   if (err) {
     console.error('Database connection error:', err);
   } else {
     console.log('Connected to SQLite database');
+    // Enable foreign keys
+    db.run('PRAGMA foreign_keys = ON');
   }
 });
 

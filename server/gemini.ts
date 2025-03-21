@@ -60,6 +60,10 @@ Response must be only the JSON array, no other text.`;
 }
 
 export async function getRecommendations(profile: any) {
+  if (!profile) {
+    return { success: false, message: "Profile data is required" };
+  }
+
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     const prompt = `Given this user profile: ${JSON.stringify(profile)}, suggest 3 learning recommendations.`;
@@ -67,10 +71,19 @@ export async function getRecommendations(profile: any) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
+    
+    const recommendations = text.split('\n').filter(Boolean);
+    
+    if (recommendations.length === 0) {
+      return { success: false, message: "No recommendations generated" };
+    }
 
-    return { success: true, recommendations: text.split('\n') };
+    return { success: true, recommendations };
   } catch (error) {
     console.error('Gemini API error:', error);
-    return { success: false, message: "Failed to generate recommendations", error };
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : "Failed to generate recommendations"
+    };
   }
 }
