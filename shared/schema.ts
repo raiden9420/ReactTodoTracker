@@ -23,10 +23,7 @@ export const surveySchema = z.object({
   subjects: z.array(z.string()).min(1),
   interests: z.string().min(2),
   skills: z.string().min(2),
-  careerGoals: z.string().min(2),
-  thinkingStyle: z.string().min(2),
-  additionalInfo: z.string().optional(),
-  goal: z.string(),
+  goal: z.string().min(2),
   thinking_style: z.enum(["Plan", "Flow"]),
   extra_info: z.string().optional(),
 });
