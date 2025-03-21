@@ -23,7 +23,7 @@ export default function Dashboard() {
   
   // Fetch dashboard data from API
   const { data: dashboardData, isLoading, error } = useQuery({
-    queryKey: ['/api/dashboard', userId],
+    queryKey: [`/api/dashboard/${userId}`],
     queryFn: async () => {
       try {
         const response = await fetch(`/api/dashboard/${userId}`);
@@ -174,7 +174,7 @@ export default function Dashboard() {
 
           {/* Dashboard Grids */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <GoalsCard goals={goals} />
+            <GoalsCard goals={goals} userId={parseInt(userId)} />
             <WhatsNextCard course={whatNext.course} video={whatNext.video} />
             <TrendingTopicsCard topics={trends} />
             <RecentActivityCard activities={activities} />
