@@ -21,10 +21,11 @@ export const storage = {
   async submitSurvey(surveyData: Survey) {
     return new Promise((resolve, reject) => {
       const stmt = db.prepare(
-        'INSERT INTO users (name, email, subjects, interests, skills, goal, thinking_style, extra_info, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO users (username, name, email, subjects, interests, skills, goal, thinking_style, extra_info, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       stmt.run(
         [
+          surveyData.name, // Using name as username for simplicity
           surveyData.name,
           surveyData.email,
           JSON.stringify(surveyData.subjects),

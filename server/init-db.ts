@@ -11,6 +11,8 @@ db.serialize(() => {
   // Create users table with all required fields
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    name TEXT NOT NULL,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     subjects TEXT NOT NULL,
