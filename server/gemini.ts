@@ -16,7 +16,7 @@ export async function suggestGoals(subjects: string[], skills: string, interests
     
     // Create the prompt
     const prompt = `Suggest ${count} specific and actionable career development goals focused on the subjects: ${subjectsString}
-Consider these aspects - Current Skills: ${skills}, Interests: ${interests}, Career Goals: ${profile.careerGoals || 'Not specified'}, Thinking Style: ${profile.thinkingStyle || 'Not specified'}, Additional Info: ${profile.additionalInfo || 'Not specified'}
+Consider these aspects - Current Skills: ${skills}, Interests: ${interests}
 
 Based on the user's thinking style and career goals, adjust the difficulty and complexity of tasks accordingly.
 

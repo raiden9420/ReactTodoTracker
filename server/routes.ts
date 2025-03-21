@@ -162,28 +162,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // If no goals exist, generate AI suggestions
+      // If no goals exist, return empty array
       if (userGoals.length === 0) {
-        try {
-          const suggestions = await suggestGoals(
-            profile.subjects,
-            profile.skills,
-            profile.interests,
-            2
-          );
-          
-          // Create the AI-suggested goals
-          if (suggestions && suggestions.length > 0) {
-            userGoals = await Promise.all(
-              suggestions.map(task => 
-                storage.createGoal({
-                  task,
-                  completed: false,
-                  userId
-                })
-              )
-            );
-          }
+        userGoals = [];
         } catch (error) {
           console.error("Error generating initial goals:", error);
         }
