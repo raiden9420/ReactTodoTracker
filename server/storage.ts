@@ -1,8 +1,7 @@
 
 import sqlite3 from 'sqlite3';
-import { Database } from 'sqlite3';
 
-const db = new Database('emerge.db');
+const db = new sqlite3.Database('emerge.db');
 
 export interface User {
   id: number;
