@@ -67,12 +67,24 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
   const handleToggleGoal = async (goalId: string, completed: boolean) => {
     setIsLoading(true);
     try {
+      // First mark as complete
+      await apiRequest(`/api/goals/${goalId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ completed }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
       if (completed) {
-        // First mark as complete
-        await apiRequest(`/api/goals/${goalId}`, {
-          method: 'PUT',
-          body: { completed }
-        });
+        // Wait a moment to show completion before removing
+        setTimeout(async () => {
+          await apiRequest(`/api/goals/${goalId}`, {
+            method: 'DELETE'
+          });
+          queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
+        }, 500);
+      }
 
         // Then delete after a short delay
         setTimeout(async () => {

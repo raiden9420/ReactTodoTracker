@@ -15,14 +15,16 @@ export async function suggestGoals(subjects: string[], skills: string, interests
     const subjectsString = subjects.join(", ");
     
     // Create the prompt
-    const prompt = `Suggest ${count} specific and actionable micro-goals focused primarily on the subjects: ${subjectsString}
-Secondary considerations - Skills: ${skills}, Interests: ${interests}
+    const prompt = `Suggest ${count} specific and actionable career development goals focused on the subjects: ${subjectsString}
+Consider these aspects - Current Skills: ${skills}, Interests: ${interests}
 
 Requirements for goals:
-- Must be very small, achievable in 1-2 hours maximum
-- Focus on concrete learning outcomes from the subjects
+- Must be achievable in 1-2 hours
+- Focus on career exploration and professional development in the subject field
+- Should help understand career paths and opportunities
+- Include industry-relevant skills or knowledge
 - Be specific and measurable
-- Prioritize academic/professional growth over hobbies
+- Example: "Research 2 companies hiring ${subjectsString.split(',')[0]} professionals and list their requirements"
 
 Format as JSON array of strings. Example:
 ["Complete 3 linear algebra practice problems", "Write a 1-page summary of photosynthesis process"]

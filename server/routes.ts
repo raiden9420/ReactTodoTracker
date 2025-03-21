@@ -132,10 +132,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the user's learning goals
       let userGoals = await storage.getGoals(userId);
       
-      // If refresh suggestions is called, clear existing goals first
+      // Clear all existing goals if refreshing suggestions
       if (req.url.includes('/goals/suggest/')) {
         await Promise.all(userGoals.map(goal => storage.deleteGoal(goal.id)));
         userGoals = [];
+        
+        // Generate new suggestions right away
+        const suggestions = await suggestGoals(
+          profile.subjects,
+          profile.skills,
+          profile.interests,
+          2
+        );
+        
+        if (suggestions && suggestions.length > 0) {
+          userGoals = await Promise.all(
+            suggestions.map(task => 
+              storage.createGoal({
+                task,
+                completed: false,
+                userId
+              })
+            )
+          );
+        }
+        return res.status(200).json({
+          success: true,
+          data: userGoals
+        });
       }
       
       // If no goals exist, generate AI suggestions
