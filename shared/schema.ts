@@ -28,6 +28,24 @@ export const surveySchema = z.object({
 
 export type Survey = z.infer<typeof surveySchema>;
 
+// Learning Goal schema
+export const goalSchema = z.object({
+  id: z.string().uuid().optional(),
+  task: z.string().min(2),
+  completed: z.boolean().default(false),
+  userId: z.number().int().positive(),
+});
+
+export type Goal = z.infer<typeof goalSchema>;
+
+// Goal creation schema
+export const createGoalSchema = goalSchema.omit({ id: true });
+export type CreateGoal = z.infer<typeof createGoalSchema>;
+
+// Goal update schema
+export const updateGoalSchema = goalSchema.pick({ completed: true });
+export type UpdateGoal = z.infer<typeof updateGoalSchema>;
+
 // User profile combining user account and survey data
 export const userProfiles = pgTable("user_profiles", {
   id: serial("id").primaryKey(),

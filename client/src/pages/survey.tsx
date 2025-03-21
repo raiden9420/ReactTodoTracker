@@ -129,7 +129,7 @@ export default function Survey() {
   };
 
   return (
-    <div className="container max-w-3xl py-10">
+    <div className="container max-w-3xl py-10 mx-auto">
       <Card className="w-full">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl">Welcome to Emerge!</CardTitle>
