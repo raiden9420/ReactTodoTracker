@@ -28,7 +28,8 @@ export class SQLiteStorage implements IStorage {
   private db: any;
 
   constructor() {
-    const sqlite3 = require('sqlite3').verbose();
+    return (async () => {
+    const sqlite3 = (await import('sqlite3')).default.verbose();
     this.db = new sqlite3.Database('emerge.db');
     
     // Add a demo user for testing
@@ -41,6 +42,8 @@ export class SQLiteStorage implements IStorage {
     
     // Initialize empty goals map
     this.goals = new Map();
+    return this;
+    })();
   }
 
   async getUser(id: number): Promise<User | undefined> {
