@@ -46,25 +46,8 @@ export class MemStorage implements IStorage {
     };
     this.users.set(demoUser.id, demoUser);
     
-    // Add some sample goals for the demo user
-    const sampleGoals = [
-      {
-        id: uuidv4(),
-        task: "Learn Lab Safety",
-        completed: false,
-        userId: 1
-      },
-      {
-        id: uuidv4(),
-        task: "Research Job Market",
-        completed: true,
-        userId: 1
-      }
-    ];
-    
-    sampleGoals.forEach(goal => {
-      this.goals.set(goal.id, goal);
-    });
+    // Initialize empty goals map
+    this.goals = new Map();
   }
 
   async getUser(id: number): Promise<User | undefined> {
