@@ -80,21 +80,22 @@ export default function Survey() {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('http://localhost:5001/api/survey', {
+      // Use the apiRequest function to call our Express API
+      const data = await apiRequest('/api/survey', {
         method: 'POST',
         body: JSON.stringify(values),
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
       
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
+      if (data.success) {
         toast({
           title: "Survey Submitted!",
           description: "Your career journey is ready to begin.",
         });
+        
+        // Save the userId in localStorage for future reference
+        if (data.userId) {
+          localStorage.setItem('userId', data.userId.toString());
+        }
         
         // Redirect to dashboard
         navigate("/dashboard");
@@ -102,6 +103,7 @@ export default function Survey() {
         throw new Error("Failed to submit survey");
       }
     } catch (error) {
+      console.error("Error submitting survey:", error);
       toast({
         title: "Submission Failed",
         description: "Please try again later.",
