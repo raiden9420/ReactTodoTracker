@@ -1,8 +1,13 @@
+
 import sqlite3 from 'sqlite3';
 
 const db = new sqlite3.Database('emerge.db');
 
 db.serialize(() => {
+  // Drop existing tables if they exist
+  db.run('DROP TABLE IF EXISTS goals');
+  db.run('DROP TABLE IF EXISTS users');
+
   // Create users table with all required fields
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,7 +19,7 @@ db.serialize(() => {
     goal TEXT,
     thinking_style TEXT,
     extra_info TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
 
   // Create goals table
