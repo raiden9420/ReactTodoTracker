@@ -205,38 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Personalized recommendations endpoint
-app.get("/api/personalized-recommendations/:userId", async (req: Request, res: Response) => {
-  try {
-    const userId = parseInt(req.params.userId, 10);
-    if (isNaN(userId)) {
-      return res.status(400).json({ success: false, message: "Invalid user ID" });
-    }
-
-    const profile = await storage.getUserProfile(userId);
-    if (!profile) {
-      return res.status(404).json({ success: false, message: "User profile not found" });
-    }
-
-    // Get primary subject
-    const primarySubject = profile.subjects[0] || "Career Development";
-    
-    // Get video recommendation
-    const videoRecommendation = await getVideoRecommendation(primarySubject);
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        video: videoRecommendation
-      }
-    });
-  } catch (error) {
-    console.error("Error getting recommendations:", error);
-    return res.status(500).json({ success: false, message: "Failed to get recommendations" });
-  }
-});
-
-// Goals API endpoints
+  // Goals API endpoints
   
   // GET AI-suggested goals (must be before the general /goals/:userId route to avoid conflict)
   app.get("/api/goals/suggest/:userId", async (req: Request, res: Response) => {
