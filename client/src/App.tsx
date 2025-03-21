@@ -14,30 +14,30 @@ import NotFound from "@/pages/not-found";
 function AppRouter() {
   const [location] = useLocation();
   const [checkingUser, setCheckingUser] = useState(true);
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(true);
   
-  // Check if user is new
+  // Check if user has profile
   const { data, isLoading } = useQuery({
-    queryKey: ['/api/check-new'],
+    queryKey: ['/api/user/1'],
     queryFn: async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/check-new');
+        const response = await fetch('/api/user/1');
         if (!response.ok) {
-          throw new Error('Failed to fetch user status');
+          throw new Error('Failed to fetch user profile');
         }
-        return await response.json();
+        const data = await response.json();
+        return data;
       } catch (error) {
-        console.error("Error checking user status:", error);
-        // Default to showing dashboard on error
-        return { is_new: false };
+        console.error("Error checking user profile:", error);
+        return { success: false };
       }
     },
     retry: 1,
   });
   
   useEffect(() => {
-    if (!isLoading && data) {
-      setIsNewUser(data.is_new);
+    if (!isLoading) {
+      setIsNewUser(!data?.success || !data?.user?.hasProfile);
       setCheckingUser(false);
     }
   }, [data, isLoading]);
