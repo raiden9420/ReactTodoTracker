@@ -229,12 +229,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // First, delete any existing goals
+      const existingGoals = await storage.getGoals(userId);
+      await Promise.all(existingGoals.map(goal => storage.deleteGoal(goal.id)));
+      
       // Generate goal suggestions using Gemini AI
       const suggestions = await suggestGoals(
         profile.subjects,
         profile.skills,
         profile.interests,
-        2 // Number of suggestions to generate
+        3 // Number of suggestions to generate
       );
       
       // If suggestions could not be generated, return a helpful message
@@ -245,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Create the goals in the database
+      // Create only the AI-generated goals in the database
       const createdGoals = await Promise.all(
         suggestions.map(task => 
           storage.createGoal({
