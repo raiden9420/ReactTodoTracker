@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { GoalsCard } from "@/components/dashboard/goals-card";
 import { WhatsNextCard } from "@/components/dashboard/whats-next-card";
@@ -8,57 +8,110 @@ import { WelcomeSection } from "@/components/dashboard/welcome-section";
 import { RecentActivityCard } from "@/components/dashboard/recent-activity-card";
 import { Menu, Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { toast } = useToast();
   
-  // Sample data - in a real app, this would come from an API
-  const [profile] = useState({
-    name: "Sarah Johnson",
-    journey: "Biology Major",
-    progress: 45,
+  // Fetch user data from API
+  const { data: userData, isLoading } = useQuery({
+    queryKey: ['/api/user'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('http://localhost:5001/api/user');
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        return await response.json();
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load user data",
+          variant: "destructive",
+        });
+        // Return default data on error
+        return null;
+      }
+    },
+  });
+
+  // Default profile data (used until API data loads)
+  const [profile, setProfile] = useState({
+    name: "Career Explorer",
+    journey: "Getting Started",
+    progress: 0,
   });
   
-  const [goals] = useState([
-    { id: "1", title: "Update Resume with Lab Skills", completed: true, progress: 100 },
-    { id: "2", title: "Research 3 Biotech Companies", completed: true, progress: 85 },
-    { id: "3", title: "Apply for Summer Internship", completed: false, progress: 25 },
-  ]);
+  // Update profile when user data is loaded
+  useEffect(() => {
+    if (userData) {
+      setProfile({
+        name: userData.username || "Career Explorer",
+        journey: userData.level || "Getting Started",
+        progress: userData.progress || 0,
+      });
+    }
+  }, [userData]);
   
+  // Generate goals based on user profile
+  const generateGoals = () => {
+    if (userData && userData.subjects && userData.subjects.length > 0) {
+      const mainSubject = userData.subjects[0];
+      return [
+        { id: "1", title: `Learn more about ${mainSubject} careers`, completed: false, progress: 0 },
+        { id: "2", title: "Create a portfolio of skills", completed: false, progress: 0 },
+        { id: "3", title: "Research internship opportunities", completed: false, progress: 0 },
+      ];
+    }
+    return [
+      { id: "1", title: "Complete your profile", completed: false, progress: 0 },
+      { id: "2", title: "Identify top skills to develop", completed: false, progress: 0 },
+      { id: "3", title: "Research career paths", completed: false, progress: 0 },
+    ];
+  };
+  
+  const [goals] = useState(generateGoals());
+  
+  // Course recommendations
   const [whatNext] = useState({
-    course: { title: "Career Paths in Biotechnology" },
-    video: { title: "Interview Skills for Science Majors" },
+    course: { title: "Exploring Career Paths" },
+    video: { title: "How to Build a Professional Portfolio" },
   });
   
+  // Trending topics in career development
   const [trends] = useState([
-    { id: "1", name: "Healthcare Tech", primary: true, percentage: 65 },
-    { id: "2", name: "Biomedical Research", percentage: 52 },
-    { id: "3", name: "Pharmaceutical" },
-    { id: "4", name: "Genomics" },
-    { id: "5", name: "Remote Lab Work" },
+    { id: "1", name: "Remote Work", primary: true, percentage: 78 },
+    { id: "2", name: "Digital Skills", percentage: 65 },
+    { id: "3", name: "Career Transition" },
+    { id: "4", name: "Freelancing" },
+    { id: "5", name: "Personal Branding" },
   ]);
   
+  // Recent user activities
   const [activities] = useState([
     { 
       id: "1", 
       type: "lesson" as const, 
-      title: "Career Planning Workshop", 
-      time: "Yesterday",
+      title: "Career Exploration Workshop", 
+      time: "Just now",
       isRecent: true 
     },
     { 
       id: "2", 
       type: "badge" as const, 
-      title: "Resume Builder Achievement", 
-      time: "3 days ago",
-      isRecent: false
+      title: "Profile Completion Badge", 
+      time: "Today",
+      isRecent: true
     },
     { 
       id: "3", 
       type: "course" as const, 
-      title: "Science Communication Skills", 
-      time: "1 week ago",
-      isRecent: false 
+      title: "Introduction to Career Planning", 
+      time: "Today",
+      isRecent: true 
     },
   ]);
 

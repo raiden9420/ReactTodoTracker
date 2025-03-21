@@ -80,7 +80,7 @@ export default function Survey() {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/survey', {
+      const response = await fetch('http://localhost:5001/api/survey', {
         method: 'POST',
         body: JSON.stringify(values),
         headers: {
