@@ -463,6 +463,14 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
 }
 
 // Helper function to generate trending topics based on user's subjects
+async function validateRequest(req: any, res: any, next: any) {
+  const isConnected = await validateConnection();
+  if (!isConnected) {
+    return res.status(500).json({ success: false, message: "Database connection error" });
+  }
+  next();
+}
+
 function generateTrendingTopics(subjects: string[]) {
   const baseTopics = [
     { id: "1", name: "Career Planning", primary: true, percentage: 85 },

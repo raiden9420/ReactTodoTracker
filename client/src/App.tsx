@@ -17,7 +17,7 @@ function AppRouter() {
   const [isNewUser, setIsNewUser] = useState(true);
   
   // Check if user has profile
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['/api/user/1'],
     queryFn: async () => {
       try {

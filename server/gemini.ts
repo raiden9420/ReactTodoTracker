@@ -1,20 +1,15 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Access API key from environment variables (Replit Secrets)
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY is required");
+}
 
-// Initialize the Google Generative AI
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function suggestGoals(subjects: string[], skills: string, interests: string, count: number = 2): Promise<string[]> {
   try {
-    // Get the generative model
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    
-    // Format subjects as a comma-separated string
     const subjectsString = subjects.join(", ");
-    
-    // Create the prompt
     const prompt = `Suggest 1 specific and actionable career development goal focused on the subjects: ${subjectsString}
 Consider these aspects - Current Skills: ${skills}, Interests: ${interests}
 
@@ -42,29 +37,40 @@ Format as JSON array of strings. Example:
 
 Response must be only the JSON array, no other text.`;
 
-    // Generate content
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
-    
-    // Parse the JSON array from the response
-    // Look for anything that resembles a JSON array in the response
     const match = text.match(/\[[\s\S]*\]/);
-    
+
     if (match) {
       try {
         const goals = JSON.parse(match[0]);
-        // Only return the first task from the array
         return Array.isArray(goals) && goals.length > 0 ? [goals[0]] : [];
       } catch (parseError) {
         console.error("Error parsing Gemini response:", parseError);
         return [];
       }
     }
-    
+
     return [];
   } catch (error) {
     console.error("Error generating goals with Gemini:", error);
     return [];
+  }
+}
+
+export async function getRecommendations(profile: any) {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const prompt = `Given this user profile: ${JSON.stringify(profile)}, suggest 3 learning recommendations.`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    return { success: true, recommendations: text.split('\n') };
+  } catch (error) {
+    console.error('Gemini API error:', error);
+    return { success: false, message: "Failed to generate recommendations", error };
   }
 }
