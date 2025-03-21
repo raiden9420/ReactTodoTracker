@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { LayoutDashboard, FolderKanban, Book, Settings } from "lucide-react";
+import { LayoutDashboard, Briefcase, GraduationCap, MessageSquare, Settings } from "lucide-react";
 
 type NavItem = {
   label: string;
@@ -24,15 +24,16 @@ type SidebarProps = {
 
 export function Sidebar({ isOpen, setIsOpen, profile }: SidebarProps) {
   const [recentItems] = useState([
-    { id: 1, name: "Python Basics", href: "#python-basics" },
-    { id: 2, name: "Data Structures", href: "#data-structures" },
-    { id: 3, name: "Functions & Classes", href: "#functions" },
+    { id: 1, name: "Career Assessments", href: "#assessments" },
+    { id: 2, name: "Industry Insights", href: "#insights" },
+    { id: 3, name: "Mock Interviews", href: "#interviews" },
   ]);
 
   const navItems: NavItem[] = [
     { label: "Dashboard", href: "/", icon: <LayoutDashboard className="w-4 h-4" />, active: true },
-    { label: "Projects", href: "#projects", icon: <FolderKanban className="w-4 h-4" /> },
-    { label: "Learning", href: "#learning", icon: <Book className="w-4 h-4" /> },
+    { label: "Job Matches", href: "#jobs", icon: <Briefcase className="w-4 h-4" /> },
+    { label: "Learning", href: "#learning", icon: <GraduationCap className="w-4 h-4" /> },
+    { label: "Career Coach", href: "#coach", icon: <MessageSquare className="w-4 h-4" /> },
     { label: "Settings", href: "#settings", icon: <Settings className="w-4 h-4" /> },
   ];
 
@@ -46,8 +47,8 @@ export function Sidebar({ isOpen, setIsOpen, profile }: SidebarProps) {
         {/* User Profile */}
         <div className="flex items-center gap-3 px-2 py-3">
           <Avatar className="h-10 w-10 border border-border flex-shrink-0">
-            <AvatarImage src={profile.avatarUrl || "https://randomuser.me/api/portraits/men/32.jpg"} alt="User avatar" />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarImage src={profile.avatarUrl || "https://randomuser.me/api/portraits/women/32.jpg"} alt="User avatar" />
+            <AvatarFallback>{profile.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
           </Avatar>
           
           <div className="flex flex-col min-w-0">
@@ -59,7 +60,7 @@ export function Sidebar({ isOpen, setIsOpen, profile }: SidebarProps) {
         {/* Progress Section */}
         <div className="mt-8 space-y-1.5 px-2">
           <div className="flex justify-between items-center mb-1.5">
-            <h3 className="text-sm font-medium">Progress</h3>
+            <h3 className="text-sm font-medium">Career Growth</h3>
             <span className="text-xs">{profile.progress}%</span>
           </div>
           <div className="h-2 w-full bg-sidebar-accent rounded-full overflow-hidden">
@@ -82,14 +83,14 @@ export function Sidebar({ isOpen, setIsOpen, profile }: SidebarProps) {
               href={item.href}
               onClick={() => setIsOpen(false)}
             >
-              <a className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium ${
+              <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${
                 item.active 
                   ? "bg-sidebar-accent text-sidebar-accent-foreground" 
                   : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
               }`}>
                 {item.icon}
                 {item.label}
-              </a>
+              </div>
             </Link>
           ))}
         </nav>
@@ -99,13 +100,13 @@ export function Sidebar({ isOpen, setIsOpen, profile }: SidebarProps) {
           <h3 className="text-sm font-semibold mb-2">Recently Viewed</h3>
           <div className="space-y-1">
             {recentItems.map((item) => (
-              <a 
-                key={item.id} 
-                href={item.href} 
-                className="block py-1 px-2 text-xs rounded hover:bg-sidebar-accent transition-colors"
+              <div 
+                key={item.id}
+                onClick={() => window.location.href = item.href}
+                className="block py-1 px-2 text-xs rounded hover:bg-sidebar-accent transition-colors cursor-pointer"
               >
                 {item.name}
-              </a>
+              </div>
             ))}
           </div>
         </div>

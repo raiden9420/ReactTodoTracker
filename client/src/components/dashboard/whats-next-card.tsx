@@ -1,4 +1,4 @@
-import { Code2, Play } from "lucide-react";
+import { BookOpen, Play, Briefcase } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -15,14 +15,14 @@ export function WhatsNextCard({ course, video }: WhatsNextProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>What's Next</CardTitle>
+        <CardTitle>Personalized Recommendations</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div className="bg-accent/50 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <div className="rounded-md bg-primary/10 p-2">
-                <Code2 className="h-5 w-5 text-primary" />
+                <BookOpen className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <h4 className="text-sm font-medium">Recommended Course</h4>
@@ -30,7 +30,7 @@ export function WhatsNextCard({ course, video }: WhatsNextProps) {
               </div>
             </div>
             <Button variant="outline" className="w-full mt-3">
-              Continue
+              Explore Course
             </Button>
           </div>
           
@@ -40,14 +40,14 @@ export function WhatsNextCard({ course, video }: WhatsNextProps) {
                 <Play className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h4 className="text-sm font-medium">Next Video</h4>
+                <h4 className="text-sm font-medium">Career Guidance Video</h4>
                 <p className="text-sm text-muted-foreground">{video.title}</p>
               </div>
             </div>
             <div className="relative mt-3 rounded-md overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
-                alt="Python code preview" 
+                src="https://images.unsplash.com/photo-1560264280-88b68371db39?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                alt="Interview preparation" 
                 className="w-full h-32 object-cover" 
               />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -57,6 +57,11 @@ export function WhatsNextCard({ course, video }: WhatsNextProps) {
               </div>
             </div>
           </div>
+          
+          <Button variant="secondary" className="w-full flex items-center justify-center gap-2">
+            <Briefcase className="h-4 w-4" />
+            View Suggested Job Matches
+          </Button>
         </div>
       </CardContent>
     </Card>

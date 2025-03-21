@@ -1,4 +1,4 @@
-import { Code, FileText, PenSquare, ChevronRight } from "lucide-react";
+import { GraduationCap, Award, BookOpen, ChevronRight, History } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 type Activity = {
@@ -17,20 +17,20 @@ export function RecentActivityCard({ activities }: RecentActivityCardProps) {
   const getActivityIcon = (type: Activity['type']) => {
     switch (type) {
       case 'lesson':
-        return <Code className="h-4 w-4 text-primary" />;
+        return <GraduationCap className="h-4 w-4 text-primary" />;
       case 'badge':
-        return <FileText className="h-4 w-4 text-muted-foreground" />;
+        return <Award className="h-4 w-4 text-muted-foreground" />;
       case 'course':
-        return <PenSquare className="h-4 w-4 text-muted-foreground" />;
+        return <BookOpen className="h-4 w-4 text-muted-foreground" />;
       default:
-        return <Code className="h-4 w-4" />;
+        return <GraduationCap className="h-4 w-4" />;
     }
   };
 
   const getActivityText = (activity: Activity) => {
     switch (activity.type) {
       case 'lesson':
-        return <>Completed <span className="font-semibold">{activity.title}</span></>;
+        return <>Attended <span className="font-semibold">{activity.title}</span></>;
       case 'badge':
         return <>Earned <span className="font-semibold">{activity.title}</span></>;
       case 'course':
@@ -42,10 +42,14 @@ export function RecentActivityCard({ activities }: RecentActivityCardProps) {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>Recent Activity</CardTitle>
+        <History className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
+        <p className="text-sm text-muted-foreground mb-4">
+          Your recent career development activities
+        </p>
         <div className="space-y-4">
           {activities.map((activity) => (
             <div key={activity.id} className="flex items-start gap-4">
@@ -70,10 +74,10 @@ export function RecentActivityCard({ activities }: RecentActivityCardProps) {
           ))}
         </div>
         
-        <a href="#view-all" className="inline-flex items-center text-sm font-medium text-primary hover:underline mt-4">
+        <button className="inline-flex items-center text-sm font-medium text-primary hover:underline mt-4">
           View all activity
           <ChevronRight className="ml-1 h-4 w-4" />
-        </a>
+        </button>
       </CardContent>
     </Card>
   );

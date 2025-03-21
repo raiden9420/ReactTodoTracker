@@ -1,4 +1,4 @@
-import { CheckIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, PlusIcon, Medal, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
@@ -16,10 +16,14 @@ type GoalsCardProps = {
 export function GoalsCard({ goals }: GoalsCardProps) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Learning Goals</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle>Career Micro-Goals</CardTitle>
+        <Medal className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
+        <p className="text-sm text-muted-foreground mb-4">
+          Complete these tasks to improve your career readiness
+        </p>
         <div className="space-y-4">
           {goals.map((goal) => (
             <div key={goal.id} className="flex items-start gap-2">
@@ -39,10 +43,16 @@ export function GoalsCard({ goals }: GoalsCardProps) {
           ))}
         </div>
         
-        <Button variant="ghost" size="sm" className="mt-4">
-          <PlusIcon className="mr-2 h-4 w-4" />
-          Add New Goal
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
+          <Button variant="ghost" size="sm" className="flex-1">
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add New Goal
+          </Button>
+          <Button variant="outline" size="sm" className="flex-1">
+            <Calendar className="mr-2 h-4 w-4" />
+            Set Deadline
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

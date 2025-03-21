@@ -14,49 +14,50 @@ export default function Dashboard() {
   
   // Sample data - in a real app, this would come from an API
   const [profile] = useState({
-    name: "Coding Journey",
-    journey: "Newbie at Python",
-    progress: 33,
+    name: "Sarah Johnson",
+    journey: "Biology Major",
+    progress: 45,
   });
   
   const [goals] = useState([
-    { id: "1", title: "Learn Python Basics", completed: true, progress: 65 },
-    { id: "2", title: "Complete Tutorial", completed: true, progress: 40 },
-    { id: "3", title: "Build Project", completed: false, progress: 10 },
+    { id: "1", title: "Update Resume with Lab Skills", completed: true, progress: 100 },
+    { id: "2", title: "Research 3 Biotech Companies", completed: true, progress: 85 },
+    { id: "3", title: "Apply for Summer Internship", completed: false, progress: 25 },
   ]);
   
   const [whatNext] = useState({
-    course: { title: "Python for Beginners" },
-    video: { title: "Functions and Classes" },
+    course: { title: "Career Paths in Biotechnology" },
+    video: { title: "Interview Skills for Science Majors" },
   });
   
   const [trends] = useState([
-    { id: "1", name: "Python", primary: true, percentage: 45 },
-    { id: "2", name: "JavaScript", percentage: 28 },
-    { id: "3", name: "React" },
-    { id: "4", name: "Node.js" },
+    { id: "1", name: "Healthcare Tech", primary: true, percentage: 65 },
+    { id: "2", name: "Biomedical Research", percentage: 52 },
+    { id: "3", name: "Pharmaceutical" },
+    { id: "4", name: "Genomics" },
+    { id: "5", name: "Remote Lab Work" },
   ]);
   
   const [activities] = useState([
     { 
       id: "1", 
       type: "lesson" as const, 
-      title: "Python Syntax Lesson", 
-      time: "2 hours ago",
+      title: "Career Planning Workshop", 
+      time: "Yesterday",
       isRecent: true 
     },
     { 
       id: "2", 
       type: "badge" as const, 
-      title: "Basic Python Badge", 
-      time: "Yesterday",
+      title: "Resume Builder Achievement", 
+      time: "3 days ago",
       isRecent: false
     },
     { 
       id: "3", 
       type: "course" as const, 
-      title: "Python for Beginners", 
-      time: "3 days ago",
+      title: "Science Communication Skills", 
+      time: "1 week ago",
       isRecent: false 
     },
   ]);
@@ -83,7 +84,7 @@ export default function Dashboard() {
           </Button>
           
           <div className="flex-1">
-            <h1 className="text-lg font-semibold">My Coding Dashboard</h1>
+            <h1 className="text-lg font-semibold">Emerge Career Dashboard</h1>
           </div>
           
           <div className="flex items-center gap-4">
@@ -101,7 +102,7 @@ export default function Dashboard() {
 
         {/* Dashboard Content */}
         <div className="p-4 sm:p-6 space-y-6">
-          <WelcomeSection username="" progress={profile.progress} />
+          <WelcomeSection username={profile.name} progress={profile.progress} />
 
           {/* Dashboard Grids */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">

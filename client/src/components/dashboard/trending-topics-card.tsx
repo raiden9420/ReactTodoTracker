@@ -1,5 +1,7 @@
+import { TrendingUp, InfoIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 type Topic = {
   id: string;
@@ -17,10 +19,15 @@ export function TrendingTopicsCard({ topics }: TrendingTopicsProps) {
   
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Trending Topics</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle>Career Market Trends</CardTitle>
+        <TrendingUp className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
+        <p className="text-sm text-muted-foreground mb-4">
+          Growing industries and skills in your field
+        </p>
+        
         <div className="flex flex-wrap gap-2">
           {topics.map((topic) => (
             <Badge 
@@ -41,7 +48,10 @@ export function TrendingTopicsCard({ topics }: TrendingTopicsProps) {
                     <div className={`h-3 w-3 rounded-full ${topic.primary ? 'bg-primary' : 'bg-secondary'}`}></div>
                     <span className="text-sm">{topic.name}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{topic.percentage}%</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground">{topic.percentage}% growth</span>
+                    <InfoIcon className="h-3 w-3 text-muted-foreground" />
+                  </div>
                 </div>
                 
                 <div className="h-2 w-full bg-accent rounded-full mt-2">
@@ -54,6 +64,10 @@ export function TrendingTopicsCard({ topics }: TrendingTopicsProps) {
             ))}
           </div>
         )}
+        
+        <Button variant="link" size="sm" className="mt-4 px-0">
+          View complete industry report
+        </Button>
       </CardContent>
     </Card>
   );
