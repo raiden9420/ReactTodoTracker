@@ -21,7 +21,7 @@ export const storage = {
   async submitSurvey(surveyData: Survey) {
     return new Promise((resolve, reject) => {
       const stmt = db.prepare(
-        'INSERT INTO users (username, name, email, subjects, interests, skills, goal, thinking_style, extra_info, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO users (username, name, email, subjects, interests, skills, goal, thinking_style, extra_info, avatar, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       stmt.run(
         [
@@ -34,6 +34,7 @@ export const storage = {
           surveyData.goal,
           surveyData.thinking_style,
           surveyData.extra_info || '',
+          surveyData.avatar || null, // Handle avatar, allowing null if not provided
           new Date().toISOString()
         ],
         function(err) {
@@ -52,7 +53,7 @@ export const storage = {
 
   async getUserProfile(userId: number) {
     return new Promise((resolve, reject) => {
-      db.get('SELECT name, email, subjects, interests, skills, goal, thinking_style, extra_info, created_at FROM users WHERE id = ?', [userId], (err, row) => {
+      db.get('SELECT name, email, subjects, interests, skills, goal, thinking_style, extra_info, avatar, created_at FROM users WHERE id = ?', [userId], (err, row) => {
         if (err) reject(err);
         if (row && row.subjects) {
           try {
@@ -88,16 +89,16 @@ export const storage = {
   async updateUser(id: number, updates: Partial<User>): Promise<void> {
     const sets: string[] = [];
     const values: any[] = [];
-    
+
     Object.entries(updates).forEach(([key, value]) => {
       if (key !== 'id') {
         sets.push(`${key} = ?`);
         values.push(value);
       }
     });
-    
+
     values.push(id);
-    
+
     return new Promise((resolve, reject) => {
       db.run(
         `UPDATE users SET ${sets.join(', ')} WHERE id = ?`,

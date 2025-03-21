@@ -182,6 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate dashboard data based on user profile
       const dashboardData = {
         username: (await storage.getUser(userId))?.username || "User",
+        avatar: profile.avatar,
         progress: 25, // Sample progress percentage
         goals: formattedGoals,
         trendingTopics: generateTrendingTopics(profile.subjects),
