@@ -15,15 +15,19 @@ export async function suggestGoals(subjects: string[], skills: string, interests
     const subjectsString = subjects.join(", ");
     
     // Create the prompt
-    const prompt = `Suggest ${count} specific and actionable micro-goals for a student with:
-- Subjects: ${subjectsString}
-- Skills: ${skills}
-- Interests: ${interests}
+    const prompt = `Suggest ${count} specific and actionable micro-goals focused primarily on the subjects: ${subjectsString}
+Secondary considerations - Skills: ${skills}, Interests: ${interests}
 
-The goals should be concrete, achievable learning tasks that help build career-relevant skills.
-Format your response as a simple JSON array of strings, each containing one goal. 
-For example: ["Learn basic Python syntax", "Practice data visualization with matplotlib"]
-Don't include any explanations, just the JSON array.`;
+Requirements for goals:
+- Must be very small, achievable in 1-2 hours maximum
+- Focus on concrete learning outcomes from the subjects
+- Be specific and measurable
+- Prioritize academic/professional growth over hobbies
+
+Format as JSON array of strings. Example:
+["Complete 3 linear algebra practice problems", "Write a 1-page summary of photosynthesis process"]
+
+Response must be only the JSON array, no other text.`;
 
     // Generate content
     const result = await model.generateContent(prompt);
