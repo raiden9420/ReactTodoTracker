@@ -1,10 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 if (!process.env.GEMINI_API_KEY) {
-  console.error("GEMINI_API_KEY is required");
+  throw new Error("GEMINI_API_KEY environment variable is required");
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function suggestGoals(subjects: string[], skills: string, interests: string, count: number = 2): Promise<string[]> {
   try {

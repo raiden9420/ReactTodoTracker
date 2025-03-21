@@ -4,11 +4,17 @@ import sqlite3 from 'sqlite3';
 const db = new sqlite3.Database('emerge.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
   if (err) {
     console.error('Database connection error:', err);
-  } else {
-    console.log('Connected to SQLite database');
-    // Enable foreign keys
-    db.run('PRAGMA foreign_keys = ON');
+    process.exit(1);
   }
+  console.log('Connected to SQLite database');
+  db.run('PRAGMA foreign_keys = ON');
+  db.run('PRAGMA journal_mode = WAL');
+});
+
+process.on('exit', () => {
+  db.close((err) => {
+    if (err) console.error('Error closing database:', err);
+  });
 });
 
 export interface User {
