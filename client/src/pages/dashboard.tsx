@@ -53,51 +53,20 @@ export default function Dashboard() {
     },
   });
 
-  // Default profile data (used until API data loads)
+  // Initialize empty states
   const [profile, setProfile] = useState({
-    name: "Career Explorer",
-    journey: "Getting Started",
-    progress: 25,
+    name: "",
+    journey: "",
+    progress: 0,
   });
   
-  // Default goals, trends, activities, and next steps
   const [goals, setGoals] = useState([]);
-  
   const [whatNext, setWhatNext] = useState({
-    course: { title: "Exploring Career Paths" },
-    video: { title: "How to Build a Professional Portfolio" },
+    course: { title: "" },
+    video: { title: "" },
   });
-  
-  const [trends, setTrends] = useState([
-    { id: "1", name: "Career Planning", primary: true, percentage: 85 },
-    { id: "2", name: "Networking", percentage: 72 },
-    { id: "3", name: "Resume Building", percentage: 68 },
-    { id: "4", name: "Interview Skills", percentage: 65 },
-  ]);
-  
-  const [activities, setActivities] = useState([
-    { 
-      id: "1", 
-      type: "badge" as const, 
-      title: "Career Explorer", 
-      time: "2 days ago",
-      isRecent: true 
-    },
-    { 
-      id: "2", 
-      type: "lesson" as const, 
-      title: "Introduction to Career Pathways", 
-      time: "5 days ago",
-      isRecent: true
-    },
-    { 
-      id: "3", 
-      type: "course" as const, 
-      title: "Career Decision Making", 
-      time: "1 week ago",
-      isRecent: false 
-    },
-  ]);
+  const [trends, setTrends] = useState([]);
+  const [activities, setActivities] = useState([]);
   
   // Update dashboard data when received from API
   useEffect(() => {
