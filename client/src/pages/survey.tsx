@@ -75,18 +75,19 @@ export default function Survey() {
 
     try {
       // Use the apiRequest function to call our Express API
-      const data = await apiRequest<{
-        success: boolean;
-        userId?: number;
-        profileId?: number;
-        message?: string;
-      }>('/api/survey', {
+      const response = await fetch('/api/survey', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
 
       if (data && data.success) {
         toast({
