@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckIcon, ChevronsUpDown } from "lucide-react";
+import { CheckIcon, ChevronsUpDown, Upload } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -146,6 +147,45 @@ export default function Survey() {
                       <Input placeholder="Your Name" {...field} />
                     </FormControl>
                     <FormMessage />
+
+  <FormField
+    control={form.control}
+    name="avatar"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Profile Picture (Optional)</FormLabel>
+        <FormControl>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20 border-2">
+              <AvatarImage src={field.value || undefined} />
+              <AvatarFallback>
+                <Upload className="h-8 w-8 text-muted-foreground" />
+              </AvatarFallback>
+            </Avatar>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    field.onChange(reader.result);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+          </div>
+        </FormControl>
+        <FormDescription>
+          Upload a profile picture or leave empty to use default avatar
+        </FormDescription>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+
                   </FormItem>
                 )}
               />

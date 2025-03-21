@@ -14,6 +14,7 @@ db.serialize(() => {
     username TEXT NOT NULL,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
+    avatar TEXT,
     subjects TEXT NOT NULL,
     interests TEXT NOT NULL,
     skills TEXT NOT NULL,
