@@ -134,15 +134,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Clear all existing goals if refreshing suggestions
       if (req.url.includes('/goals/suggest/')) {
+        // Delete all existing goals
         await Promise.all(userGoals.map(goal => storage.deleteGoal(goal.id)));
-        userGoals = [];
         
-        // Generate new suggestions right away
+        // Generate only AI suggestions
         const suggestions = await suggestGoals(
           profile.subjects,
           profile.skills,
           profile.interests,
-          2
+          3 // Increased to 3 suggestions since we're not adding defaults
         );
         
         if (suggestions && suggestions.length > 0) {

@@ -65,9 +65,9 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
   };
 
   const handleToggleGoal = async (goalId: string, completed: boolean) => {
+    if (isLoading) return;
     setIsLoading(true);
     try {
-      // First mark as complete
       await apiRequest(`/api/goals/${goalId}`, {
         method: 'PUT',
         body: JSON.stringify({ completed }),
@@ -77,18 +77,16 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
       });
 
       if (completed) {
-        // Wait a moment to show completion before removing
-        setTimeout(async () => {
-          await apiRequest(`/api/goals/${goalId}`, {
-            method: 'DELETE'
-          });
-          queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
-        }, 500);
+        // Wait a moment to show strike-through
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await apiRequest(`/api/goals/${goalId}`, {
+          method: 'DELETE'
+        });
       }
-
-      // Invalidate goals cache to refresh
+      
       queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
     } catch (error) {
+      console.error('Error updating goal:', error);
       toast({
         title: "Error",
         description: "Failed to update goal status",

@@ -18,6 +18,8 @@ export type User = typeof users.$inferSelect;
 
 // Survey schema
 export const surveySchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
   subjects: z.array(z.string()).min(1),
   interests: z.string().min(2),
   skills: z.string().min(2),
