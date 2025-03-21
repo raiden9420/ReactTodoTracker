@@ -24,19 +24,12 @@ export interface IStorage {
   deleteGoal(id: string): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private userProfiles: Map<number, UserProfile>;
-  private goals: Map<string, Goal>;
-  private userIdCounter: number;
-  private profileIdCounter: number;
+export class SQLiteStorage implements IStorage {
+  private db: any;
 
   constructor() {
-    this.users = new Map();
-    this.userProfiles = new Map();
-    this.goals = new Map();
-    this.userIdCounter = 1;
-    this.profileIdCounter = 1;
+    const sqlite3 = require('sqlite3').verbose();
+    this.db = new sqlite3.Database('emerge.db');
     
     // Add a demo user for testing
     const demoUser: User = {
@@ -68,10 +61,35 @@ export class MemStorage implements IStorage {
   }
   
   async getUserProfile(userId: number): Promise<UserProfile | undefined> {
-    // Find the profile for this user
-    return Array.from(this.userProfiles.values()).find(
-      (profile) => profile.userId === userId
-    );
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        `SELECT * FROM users WHERE id = ?`,
+        [userId],
+        (err: Error, row: any) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          if (!row) {
+            resolve(undefined);
+            return;
+          }
+          
+          const profile: UserProfile = {
+            id: row.id,
+            userId: row.id,
+            subjects: JSON.parse(row.subjects || '[]'),
+            interests: row.interests,
+            skills: row.skills,
+            goal: row.goal,
+            thinking_style: row.thinking_style,
+            extra_info: row.extra_info,
+            created_at: new Date().toISOString()
+          };
+          resolve(profile);
+        }
+      );
+    });
   }
   
   async createUserProfile(profile: InsertUserProfile): Promise<UserProfile> {
