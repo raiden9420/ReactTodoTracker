@@ -21,21 +21,13 @@ import { apiRequest } from "@/lib/queryClient";
 
 // Define the form schema with Zod
 const formSchema = z.object({
-  subjects: z.array(z.string()).min(1, {
-    message: "Please select at least one subject.",
-  }),
-  interests: z.string().min(2, {
-    message: "Please enter your interests.",
-  }),
-  skills: z.string().min(2, {
-    message: "Please enter your skills.",
-  }),
-  goal: z.string({
-    required_error: "Please select a career goal.",
-  }),
-  thinking_style: z.enum(["Plan", "Flow"], {
-    required_error: "Please select your thinking style.",
-  }),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email"),
+  subjects: z.array(z.string()).min(1, "Please select at least one subject"),
+  interests: z.string().min(2, "Interests must be at least 2 characters"),
+  skills: z.string().min(2, "Skills must be at least 2 characters"),
+  goal: z.string().min(1, "Please enter a goal"),
+  thinking_style: z.enum(["Plan", "Flow"]),
   extra_info: z.string().optional(),
 });
 
@@ -66,6 +58,8 @@ export default function Survey() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: "",
+      email: "",
       subjects: [],
       interests: "",
       skills: "",
@@ -78,7 +72,7 @@ export default function Survey() {
   // Handle form submission
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    
+
     try {
       // Use the apiRequest function to call our Express API
       const data = await apiRequest<{
@@ -93,18 +87,18 @@ export default function Survey() {
         },
         body: JSON.stringify(values),
       });
-      
+
       if (data && data.success) {
         toast({
           title: "Survey Submitted!",
           description: "Your career journey is ready to begin.",
         });
-        
+
         // Save the userId in localStorage for future reference
         if (data.userId) {
           localStorage.setItem('userId', data.userId.toString());
         }
-        
+
         // Redirect to dashboard
         navigate("/dashboard");
       } else {
@@ -140,6 +134,36 @@ export default function Survey() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Name Input */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Email Input */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="Your Email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Subjects Selection */}
               <FormField
                 control={form.control}
@@ -179,7 +203,7 @@ export default function Survey() {
                                   const newSelectedSubjects = isSelected
                                     ? selectedSubjects.filter(s => s !== subject.value)
                                     : [...selectedSubjects, subject.value];
-                                  
+
                                   form.setValue("subjects", newSelectedSubjects);
                                   setSelectedSubjects(newSelectedSubjects);
                                 }}
@@ -199,7 +223,7 @@ export default function Survey() {
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    
+
                     {/* Display selected subjects as badges */}
                     {selectedSubjects.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
@@ -214,7 +238,7 @@ export default function Survey() {
                         ))}
                       </div>
                     )}
-                    
+
                     <FormDescription>
                       Select your fields of study and interests.
                     </FormDescription>
@@ -266,19 +290,7 @@ export default function Survey() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Career Goal</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your goal" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Internship">Internship</SelectItem>
-                        <SelectItem value="Job">Job</SelectItem>
-                        <SelectItem value="Learn More">Learn More</SelectItem>
-                        <SelectItem value="Not Sure">Not Sure</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input placeholder="Your Career Goal" {...field} />
                     <FormDescription>
                       What are you looking to achieve in the near future?
                     </FormDescription>
