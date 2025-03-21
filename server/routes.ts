@@ -29,12 +29,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Store the survey data (for now using demo user ID 1)
       const result = await storage.submitSurvey(surveyData);
       
-      // Return success response
+      // Return success response with user profile
       return res.status(200).json({ 
         success: true, 
         message: "Survey submitted successfully",
         userId: result.userId,
-        profileId: result.profile.id
+        user: {
+          id: result.userId,
+          hasProfile: true,
+          ...result.profile
+        }
       });
     } catch (error) {
       console.error("Error submitting survey:", error);

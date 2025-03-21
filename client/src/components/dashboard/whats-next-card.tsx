@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { BookOpen, Play, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +21,7 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
       setIsLoading(true);
       const response = await fetch(`/api/personalized-recommendations/${userId}`);
       const data = await response.json();
-      
+
       if (data.success && data.data.video) {
         setVideo(data.data.video);
       } else {
@@ -74,7 +73,7 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
               Explore Course
             </Button>
           </div>
-          
+
           {video && (
             <div className="bg-accent/50 rounded-lg p-4">
               <div className="flex items-start gap-3">

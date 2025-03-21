@@ -121,7 +121,6 @@ export {
   ToastViewport,
   Toast,
   ToastTitle,
-  ToastDescription,
-  ToastClose,
   ToastAction,
+  ToastDescription,
 }
