@@ -1,81 +1,124 @@
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { neon } from '@neondatabase/serverless';
+
+import { Database } from 'sqlite3';
 import * as schema from '../shared/schema';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is required");
-}
+const db = new Database('emerge.db');
 
-const sql = neon(process.env.DATABASE_URL);
-export const db = drizzle(sql, { schema });
-
-// Add connection validation
 export async function validateConnection() {
-  try {
-    await sql`SELECT 1`;
-    return true;
-  } catch (error) {
-    console.error('Database connection error:', error);
-    return false;
-  }
+  return new Promise((resolve) => {
+    db.get("SELECT 1", (err) => {
+      resolve(!err);
+    });
+  });
 }
 
-export interface IStorage {
-  getUser(id: number): Promise<schema.User | undefined>;
-  getUserByUsername(username: string): Promise<schema.User | undefined>;
-  createUser(user: schema.InsertUser): Promise<schema.User>;
-
-  // User profile methods
-  getUserProfile(userId: number): Promise<schema.UserProfile | undefined>;
-  createUserProfile(profile: schema.InsertUserProfile): Promise<schema.UserProfile>;
-  updateUserProfile(userId: number, profile: Partial<schema.InsertUserProfile>): Promise<schema.UserProfile | undefined>;
-
-  // Survey submission method
-  submitSurvey(survey: schema.Survey, userId?: number): Promise<{ userId: number; profile: schema.UserProfile }>;
-
-  // Goals methods
-  getGoals(userId: number): Promise<schema.Goal[]>;
-  createGoal(goal: schema.CreateGoal): Promise<schema.Goal>;
-  updateGoal(id: string, updates: schema.UpdateGoal): Promise<schema.Goal | undefined>;
-  deleteGoal(id: string): Promise<boolean>;
-}
-
-
-//Implementation using drizzle-orm would go here.  This is a placeholder.
-export class NeonStorage implements IStorage {
+export class SQLiteStorage implements IStorage {
   async getUser(id: number): Promise<schema.User | undefined> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve) => {
+      db.get("SELECT * FROM users WHERE id = ?", [id], (err, row) => {
+        resolve(row);
+      });
+    });
   }
+
   async getUserByUsername(username: string): Promise<schema.User | undefined> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve) => {
+      db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
+        resolve(row);
+      });
+    });
   }
+
   async createUser(user: schema.InsertUser): Promise<schema.User> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve, reject) => {
+      db.run("INSERT INTO users (username, password) VALUES (?, ?)", 
+        [user.username, user.password],
+        function(err) {
+          if (err) reject(err);
+          resolve({ id: this.lastID, ...user });
+        });
+    });
   }
+
   async getUserProfile(userId: number): Promise<schema.UserProfile | undefined> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve) => {
+      db.get("SELECT * FROM users WHERE id = ?", [userId], (err, row) => {
+        resolve(row);
+      });
+    });
   }
+
   async createUserProfile(profile: schema.InsertUserProfile): Promise<schema.UserProfile> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve, reject) => {
+      db.run("UPDATE users SET skills = ?, subjects = ?, interests = ?, goal = ?, thinking_style = ?, extra_info = ? WHERE id = ?",
+        [profile.skills, JSON.stringify(profile.subjects), profile.interests, profile.goal, profile.thinking_style, profile.extra_info, profile.userId],
+        (err) => {
+          if (err) reject(err);
+          resolve(profile as schema.UserProfile);
+        });
+    });
   }
+
   async updateUserProfile(userId: number, profile: Partial<schema.InsertUserProfile>): Promise<schema.UserProfile | undefined> {
-    throw new Error("Method not implemented.");
+    const current = await this.getUserProfile(userId);
+    if (!current) return undefined;
+    
+    const updated = { ...current, ...profile };
+    return new Promise((resolve, reject) => {
+      db.run("UPDATE users SET skills = ?, subjects = ?, interests = ?, goal = ?, thinking_style = ?, extra_info = ? WHERE id = ?",
+        [updated.skills, JSON.stringify(updated.subjects), updated.interests, updated.goal, updated.thinking_style, updated.extra_info, userId],
+        (err) => {
+          if (err) reject(err);
+          resolve(updated as schema.UserProfile);
+        });
+    });
   }
+
   async submitSurvey(survey: schema.Survey, userId?: number): Promise<{ userId: number; profile: schema.UserProfile }> {
+    // Implementation depends on your specific requirements
     throw new Error("Method not implemented.");
   }
+
   async getGoals(userId: number): Promise<schema.Goal[]> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve) => {
+      db.all("SELECT * FROM goals WHERE user_id = ?", [userId], (err, rows) => {
+        resolve(rows || []);
+      });
+    });
   }
+
   async createGoal(goal: schema.CreateGoal): Promise<schema.Goal> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve, reject) => {
+      db.run("INSERT INTO goals (task, completed, user_id) VALUES (?, ?, ?)",
+        [goal.task, goal.completed, goal.userId],
+        function(err) {
+          if (err) reject(err);
+          resolve({ id: this.lastID.toString(), ...goal });
+        });
+    });
   }
+
   async updateGoal(id: string, updates: schema.UpdateGoal): Promise<schema.Goal | undefined> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve) => {
+      db.run("UPDATE goals SET completed = ? WHERE id = ?",
+        [updates.completed, id],
+        (err) => {
+          if (!err) {
+            resolve({ id, ...updates } as schema.Goal);
+          } else {
+            resolve(undefined);
+          }
+        });
+    });
   }
+
   async deleteGoal(id: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve) => {
+      db.run("DELETE FROM goals WHERE id = ?", [id], (err) => {
+        resolve(!err);
+      });
+    });
   }
 }
 
-export const storage = new NeonStorage();
+export const storage = new SQLiteStorage();
