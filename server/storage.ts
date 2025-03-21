@@ -26,23 +26,33 @@ export interface IStorage {
 
 export class SQLiteStorage implements IStorage {
   private db: any;
+  private users: Map<number, User>;
+  private userProfiles: Map<number, UserProfile>;
+  private goals: Map<string, Goal>;
+  private userIdCounter: number;
+  private profileIdCounter: number;
 
   constructor() {
     return (async () => {
-    const sqlite3 = (await import('sqlite3')).default.verbose();
-    this.db = new sqlite3.Database('emerge.db');
-    
-    // Add a demo user for testing
-    const demoUser: User = {
-      id: this.userIdCounter++,
-      username: "demo_user",
-      password: "password123",
-    };
-    this.users.set(demoUser.id, demoUser);
-    
-    // Initialize empty goals map
-    this.goals = new Map();
-    return this;
+      const sqlite3 = (await import('sqlite3')).default.verbose();
+      this.db = new sqlite3.Database('emerge.db');
+      
+      // Initialize maps and counters
+      this.users = new Map();
+      this.userProfiles = new Map();
+      this.goals = new Map();
+      this.userIdCounter = 1;
+      this.profileIdCounter = 1;
+      
+      // Add a demo user for testing
+      const demoUser: User = {
+        id: this.userIdCounter++,
+        username: "demo_user",
+        password: "password123",
+      };
+      this.users.set(demoUser.id, demoUser);
+      
+      return this;
     })();
   }
 
