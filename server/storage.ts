@@ -46,7 +46,13 @@ export const storage = {
         [surveyData.name, surveyData.email, JSON.stringify(surveyData.subjects), surveyData.interests, surveyData.skills, surveyData.goal, surveyData.thinking_style, surveyData.extra_info],
         function(err) {
           if (err) reject(err);
-          resolve({ userId: this.lastID, profile: surveyData });
+          resolve({ 
+            userId: this.lastID, 
+            profile: {
+              ...surveyData,
+              created_at: new Date().toISOString()
+            }
+          });
         }
       );
     });
@@ -57,25 +63,15 @@ export const storage = {
       db.get('SELECT subjects, interests, skills, goal, thinking_style, extra_info, created_at FROM users WHERE id = ?', [userId], (err, row) => {
         if (err) reject(err);
         if (row && row.subjects) {
-          row.subjects = JSON.parse(row.subjects);
+          try {
+            row.subjects = JSON.parse(row.subjects);
+          } catch (e) {
+            console.error('Error parsing subjects:', e);
+            row.subjects = [];
+          }
         }
         resolve(row || null);
       });
-    });
-  },
-
-  async createUser(user: Omit<User, 'id'>): Promise<User> {
-    return new Promise((resolve, reject) => {
-      const stmt = db.prepare(
-        'INSERT INTO users (username, password, skills, subjects, interests, goal, thinking_style, extra_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-      );
-      stmt.run(
-        [user.username, user.password, user.skills, user.subjects, user.interests, user.goal, user.thinking_style, user.extra_info],
-        function(err) {
-          if (err) reject(err);
-          resolve({ ...user, id: this.lastID });
-        }
-      );
     });
   },
 
@@ -163,6 +159,15 @@ export const storage = {
           resolve();
         }
       );
+    });
+  },
+
+  async deleteGoal(id: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      db.run('DELETE FROM goals WHERE id = ?', [id], (err) => {
+        if (err) reject(err);
+        resolve(true);
+      });
     });
   }
 };
