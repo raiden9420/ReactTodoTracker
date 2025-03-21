@@ -165,9 +165,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If no goals exist, return empty array
       if (userGoals.length === 0) {
         userGoals = [];
-        } catch (error) {
-          console.error("Error generating initial goals:", error);
-        }
       }
       
       // Transform goals to match the dashboard format
