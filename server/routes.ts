@@ -130,7 +130,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get the user's learning goals
-      const userGoals = await storage.getGoals(userId);
+      let userGoals = await storage.getGoals(userId);
+      
+      // If no goals exist, generate AI suggestions
+      if (userGoals.length === 0) {
+        try {
+          const suggestions = await suggestGoals(
+            profile.subjects,
+            profile.skills,
+            profile.interests,
+            2
+          );
+          
+          // Create the AI-suggested goals
+          if (suggestions && suggestions.length > 0) {
+            userGoals = await Promise.all(
+              suggestions.map(task => 
+                storage.createGoal({
+                  task,
+                  completed: false,
+                  userId
+                })
+              )
+            );
+          }
+        } catch (error) {
+          console.error("Error generating initial goals:", error);
+        }
+      }
       
       // Transform goals to match the dashboard format
       const formattedGoals = userGoals.map(goal => ({
