@@ -1,124 +1,128 @@
 
+import sqlite3 from 'sqlite3';
 import { Database } from 'sqlite3';
-import * as schema from '../shared/schema';
 
 const db = new Database('emerge.db');
 
-export async function validateConnection() {
-  return new Promise((resolve) => {
-    db.get("SELECT 1", (err) => {
-      resolve(!err);
-    });
-  });
+export interface User {
+  id: number;
+  username: string;
+  password: string;
+  skills?: string;
+  subjects?: string;
+  interests?: string;
+  goal?: string;
+  thinking_style?: string;
+  extra_info?: string;
 }
 
-export class SQLiteStorage implements IStorage {
-  async getUser(id: number): Promise<schema.User | undefined> {
-    return new Promise((resolve) => {
-      db.get("SELECT * FROM users WHERE id = ?", [id], (err, row) => {
-        resolve(row);
-      });
-    });
-  }
+export interface Goal {
+  id: number;
+  task: string;
+  completed: boolean;
+  user_id: number;
+}
 
-  async getUserByUsername(username: string): Promise<schema.User | undefined> {
-    return new Promise((resolve) => {
-      db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
-        resolve(row);
-      });
-    });
-  }
-
-  async createUser(user: schema.InsertUser): Promise<schema.User> {
+export const storage = {
+  async createUser(user: Omit<User, 'id'>): Promise<User> {
     return new Promise((resolve, reject) => {
-      db.run("INSERT INTO users (username, password) VALUES (?, ?)", 
-        [user.username, user.password],
+      const stmt = db.prepare(
+        'INSERT INTO users (username, password, skills, subjects, interests, goal, thinking_style, extra_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      );
+      stmt.run(
+        [user.username, user.password, user.skills, user.subjects, user.interests, user.goal, user.thinking_style, user.extra_info],
         function(err) {
           if (err) reject(err);
-          resolve({ id: this.lastID, ...user });
-        });
+          resolve({ ...user, id: this.lastID });
+        }
+      );
     });
-  }
+  },
 
-  async getUserProfile(userId: number): Promise<schema.UserProfile | undefined> {
-    return new Promise((resolve) => {
-      db.get("SELECT * FROM users WHERE id = ?", [userId], (err, row) => {
-        resolve(row);
+  async getUser(id: number): Promise<User | null> {
+    return new Promise((resolve, reject) => {
+      db.get('SELECT * FROM users WHERE id = ?', [id], (err, row) => {
+        if (err) reject(err);
+        resolve(row || null);
       });
     });
-  }
+  },
 
-  async createUserProfile(profile: schema.InsertUserProfile): Promise<schema.UserProfile> {
+  async getUserByUsername(username: string): Promise<User | null> {
     return new Promise((resolve, reject) => {
-      db.run("UPDATE users SET skills = ?, subjects = ?, interests = ?, goal = ?, thinking_style = ?, extra_info = ? WHERE id = ?",
-        [profile.skills, JSON.stringify(profile.subjects), profile.interests, profile.goal, profile.thinking_style, profile.extra_info, profile.userId],
-        (err) => {
-          if (err) reject(err);
-          resolve(profile as schema.UserProfile);
-        });
+      db.get('SELECT * FROM users WHERE username = ?', [username], (err, row) => {
+        if (err) reject(err);
+        resolve(row || null);
+      });
     });
-  }
+  },
 
-  async updateUserProfile(userId: number, profile: Partial<schema.InsertUserProfile>): Promise<schema.UserProfile | undefined> {
-    const current = await this.getUserProfile(userId);
-    if (!current) return undefined;
+  async updateUser(id: number, updates: Partial<User>): Promise<void> {
+    const sets: string[] = [];
+    const values: any[] = [];
     
-    const updated = { ...current, ...profile };
+    Object.entries(updates).forEach(([key, value]) => {
+      if (key !== 'id') {
+        sets.push(`${key} = ?`);
+        values.push(value);
+      }
+    });
+    
+    values.push(id);
+    
     return new Promise((resolve, reject) => {
-      db.run("UPDATE users SET skills = ?, subjects = ?, interests = ?, goal = ?, thinking_style = ?, extra_info = ? WHERE id = ?",
-        [updated.skills, JSON.stringify(updated.subjects), updated.interests, updated.goal, updated.thinking_style, updated.extra_info, userId],
+      db.run(
+        `UPDATE users SET ${sets.join(', ')} WHERE id = ?`,
+        values,
         (err) => {
           if (err) reject(err);
-          resolve(updated as schema.UserProfile);
-        });
+          resolve();
+        }
+      );
     });
-  }
+  },
 
-  async submitSurvey(survey: schema.Survey, userId?: number): Promise<{ userId: number; profile: schema.UserProfile }> {
-    // Implementation depends on your specific requirements
-    throw new Error("Method not implemented.");
-  }
+  async createGoal(goal: Omit<Goal, 'id'>): Promise<Goal> {
+    return new Promise((resolve, reject) => {
+      const stmt = db.prepare('INSERT INTO goals (task, completed, user_id) VALUES (?, ?, ?)');
+      stmt.run([goal.task, goal.completed, goal.user_id], function(err) {
+        if (err) reject(err);
+        resolve({ ...goal, id: this.lastID });
+      });
+    });
+  },
 
-  async getGoals(userId: number): Promise<schema.Goal[]> {
-    return new Promise((resolve) => {
-      db.all("SELECT * FROM goals WHERE user_id = ?", [userId], (err, rows) => {
+  async getGoals(userId: number): Promise<Goal[]> {
+    return new Promise((resolve, reject) => {
+      db.all('SELECT * FROM goals WHERE user_id = ?', [userId], (err, rows) => {
+        if (err) reject(err);
         resolve(rows || []);
       });
     });
-  }
+  },
 
-  async createGoal(goal: schema.CreateGoal): Promise<schema.Goal> {
+  async updateGoal(id: number, updates: Partial<Goal>): Promise<void> {
+    const sets: string[] = [];
+    const values: any[] = [];
+    
+    Object.entries(updates).forEach(([key, value]) => {
+      if (key !== 'id') {
+        sets.push(`${key} = ?`);
+        values.push(value);
+      }
+    });
+    
+    values.push(id);
+    
     return new Promise((resolve, reject) => {
-      db.run("INSERT INTO goals (task, completed, user_id) VALUES (?, ?, ?)",
-        [goal.task, goal.completed, goal.userId],
-        function(err) {
-          if (err) reject(err);
-          resolve({ id: this.lastID.toString(), ...goal });
-        });
-    });
-  }
-
-  async updateGoal(id: string, updates: schema.UpdateGoal): Promise<schema.Goal | undefined> {
-    return new Promise((resolve) => {
-      db.run("UPDATE goals SET completed = ? WHERE id = ?",
-        [updates.completed, id],
+      db.run(
+        `UPDATE goals SET ${sets.join(', ')} WHERE id = ?`,
+        values,
         (err) => {
-          if (!err) {
-            resolve({ id, ...updates } as schema.Goal);
-          } else {
-            resolve(undefined);
-          }
-        });
+          if (err) reject(err);
+          resolve();
+        }
+      );
     });
   }
-
-  async deleteGoal(id: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      db.run("DELETE FROM goals WHERE id = ?", [id], (err) => {
-        resolve(!err);
-      });
-    });
-  }
-}
-
-export const storage = new SQLiteStorage();
+};
