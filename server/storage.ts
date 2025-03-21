@@ -1,5 +1,5 @@
-
 import sqlite3 from 'sqlite3';
+import { Survey, Goal, User } from '@shared/schema';
 
 const db = new sqlite3.Database('emerge.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
   if (err) {
@@ -17,33 +17,24 @@ process.on('exit', () => {
   });
 });
 
-export interface User {
-  id: number;
-  username: string;
-  password: string;
-  skills?: string;
-  subjects?: string;
-  interests?: string;
-  goal?: string;
-  thinking_style?: string;
-  extra_info?: string;
-}
-
-export interface Goal {
-  id: number;
-  task: string;
-  completed: boolean;
-  user_id: number;
-}
-
 export const storage = {
-  async submitSurvey(surveyData: any) {
+  async submitSurvey(surveyData: Survey) {
     return new Promise((resolve, reject) => {
       const stmt = db.prepare(
-        'INSERT INTO users (username, email, subjects, interests, skills, goal, thinking_style, extra_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO users (name, email, subjects, interests, skills, goal, thinking_style, extra_info, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       stmt.run(
-        [surveyData.name, surveyData.email, JSON.stringify(surveyData.subjects), surveyData.interests, surveyData.skills, surveyData.goal, surveyData.thinking_style, surveyData.extra_info],
+        [
+          surveyData.name,
+          surveyData.email,
+          JSON.stringify(surveyData.subjects),
+          surveyData.interests,
+          surveyData.skills,
+          surveyData.goal,
+          surveyData.thinking_style,
+          surveyData.extra_info || '',
+          new Date().toISOString()
+        ],
         function(err) {
           if (err) reject(err);
           resolve({ 
@@ -60,7 +51,7 @@ export const storage = {
 
   async getUserProfile(userId: number) {
     return new Promise((resolve, reject) => {
-      db.get('SELECT subjects, interests, skills, goal, thinking_style, extra_info, created_at FROM users WHERE id = ?', [userId], (err, row) => {
+      db.get('SELECT name, email, subjects, interests, skills, goal, thinking_style, extra_info, created_at FROM users WHERE id = ?', [userId], (err, row) => {
         if (err) reject(err);
         if (row && row.subjects) {
           try {
@@ -121,9 +112,9 @@ export const storage = {
   async createGoal(goal: Omit<Goal, 'id'>): Promise<Goal> {
     return new Promise((resolve, reject) => {
       const stmt = db.prepare('INSERT INTO goals (task, completed, user_id) VALUES (?, ?, ?)');
-      stmt.run([goal.task, goal.completed, goal.user_id], function(err) {
+      stmt.run([goal.task, goal.completed ? 1 : 0, goal.userId], function(err) {
         if (err) reject(err);
-        resolve({ ...goal, id: this.lastID });
+        resolve({ ...goal, id: this.lastID.toString() });
       });
     });
   },
@@ -132,31 +123,31 @@ export const storage = {
     return new Promise((resolve, reject) => {
       db.all('SELECT * FROM goals WHERE user_id = ?', [userId], (err, rows) => {
         if (err) reject(err);
-        resolve(rows || []);
+        resolve(rows?.map(row => ({
+          ...row,
+          id: row.id.toString(),
+          completed: Boolean(row.completed)
+        })) || []);
       });
     });
   },
 
-  async updateGoal(id: number, updates: Partial<Goal>): Promise<void> {
-    const sets: string[] = [];
-    const values: any[] = [];
-    
-    Object.entries(updates).forEach(([key, value]) => {
-      if (key !== 'id') {
-        sets.push(`${key} = ?`);
-        values.push(value);
-      }
-    });
-    
-    values.push(id);
-    
+  async updateGoal(id: string, updates: Partial<Goal>): Promise<Goal | null> {
     return new Promise((resolve, reject) => {
       db.run(
-        `UPDATE goals SET ${sets.join(', ')} WHERE id = ?`,
-        values,
+        'UPDATE goals SET completed = ? WHERE id = ?',
+        [updates.completed ? 1 : 0, id],
         (err) => {
           if (err) reject(err);
-          resolve();
+          db.get('SELECT * FROM goals WHERE id = ?', [id], (err, row) => {
+            if (err) reject(err);
+            if (!row) resolve(null);
+            resolve({
+              ...row,
+              id: row.id.toString(),
+              completed: Boolean(row.completed)
+            });
+          });
         }
       );
     });
