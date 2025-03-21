@@ -464,11 +464,12 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
 
 // Helper function to generate trending topics based on user's subjects
 async function validateRequest(req: any, res: any, next: any) {
-  const isConnected = await validateConnection();
-  if (!isConnected) {
-    return res.status(500).json({ success: false, message: "Database connection error" });
+  try {
+    next();
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ success: false, message: "Database error", error });
   }
-  next();
 }
 
 function generateTrendingTopics(subjects: string[]) {
