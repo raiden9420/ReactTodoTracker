@@ -205,7 +205,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Goals API endpoints
+  // Personalized recommendations endpoint
+app.get("/api/personalized-recommendations/:userId", async (req: Request, res: Response) => {
+  try {
+    const userId = parseInt(req.params.userId, 10);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid user ID" 
+      });
+    }
+    
+    // Get the user profile
+    const profile = await storage.getUserProfile(userId);
+    
+    if (!profile) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User profile not found" 
+      });
+    }
+
+    // Get primary subject
+    const primarySubject = profile.subjects[0] || "career development";
+    
+    // Fetch video recommendation from YouTube
+    const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+    const searchQuery = encodeURIComponent(`${primarySubject} tutorial 2025`);
+    const youtubeResponse = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`
+    );
+    
+    const youtubeData = await youtubeResponse.json();
+    const video = youtubeData.items?.[0];
+    
+    if (!video) {
+      throw new Error("No video recommendations found");
+    }
+    
+    return res.status(200).json({
+      success: true,
+      data: {
+        video: {
+          title: video.snippet.title,
+          description: video.snippet.description,
+          url: `https://youtube.com/watch?v=${video.id.videoId}`
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error getting recommendations:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Failed to get recommendations" 
+    });
+  }
+});
+
+// Goals API endpoints
   
   // GET AI-suggested goals (must be before the general /goals/:userId route to avoid conflict)
   app.get("/api/goals/suggest/:userId", async (req: Request, res: Response) => {
