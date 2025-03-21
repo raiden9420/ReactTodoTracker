@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { BookOpen, Play, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 type WhatsNextProps = {
   userId: number;
@@ -23,15 +23,17 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
       const response = await fetch(`/api/personalized-recommendations/${userId}`);
       const data = await response.json();
       
-      if (data.success) {
+      if (data.success && data.data.video) {
         setVideo(data.data.video);
       } else {
-        throw new Error(data.message);
+        console.error('Video data not found:', data);
+        throw new Error(data.message || 'Failed to load video recommendation');
       }
     } catch (error) {
+      console.error('Error fetching recommendations:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch recommendations",
+        description: "Failed to fetch video recommendations. Please try again later.",
         variant: "destructive"
       });
     } finally {
@@ -39,7 +41,6 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
     }
   };
 
-  // Fetch recommendations on mount
   useEffect(() => {
     fetchRecommendations();
   }, []);
@@ -75,7 +76,7 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
           </div>
           
           {video && (
-            <div>
+            <div className="bg-accent/50 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <div className="rounded-md bg-primary/10 p-2">
                   <Play className="h-5 w-5 text-primary" />
@@ -93,6 +94,11 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
                   <p className="text-xs text-muted-foreground mt-1">{video.description}</p>
                 </div>
               </div>
+              <Button variant="outline" className="w-full mt-3" asChild>
+                <a href={video.url} target="_blank" rel="noopener noreferrer">
+                  Watch Video
+                </a>
+              </Button>
             </div>
           )}
         </div>
