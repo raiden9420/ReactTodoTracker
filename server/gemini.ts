@@ -54,7 +54,8 @@ Response must be only the JSON array, no other text.`;
     if (match) {
       try {
         const goals = JSON.parse(match[0]);
-        return Array.isArray(goals) ? goals : [];
+        // Only return the first task from the array
+        return Array.isArray(goals) && goals.length > 0 ? [goals[0]] : [];
       } catch (parseError) {
         console.error("Error parsing Gemini response:", parseError);
         return [];
