@@ -61,9 +61,7 @@ export default function Dashboard() {
   });
   
   // Default goals, trends, activities, and next steps
-  const [goals, setGoals] = useState([
-    { id: "1", title: "Get familiar with Emerge", completed: false, progress: 0 },
-  ]);
+  const [goals, setGoals] = useState([]);
   
   const [whatNext, setWhatNext] = useState({
     course: { title: "Exploring Career Paths" },
