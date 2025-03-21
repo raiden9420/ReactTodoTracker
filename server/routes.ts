@@ -238,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         profile.subjects,
         profile.skills,
         profile.interests,
-        3 // Number of suggestions to generate
+        1 // Number of suggestions to generate
       );
       
       // If suggestions could not be generated, return a helpful message
