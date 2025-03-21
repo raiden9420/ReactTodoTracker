@@ -40,7 +40,7 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
   };
 
   // Fetch recommendations on mount
-  useState(() => {
+  useEffect(() => {
     fetchRecommendations();
   }, []);
 
