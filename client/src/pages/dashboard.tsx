@@ -10,29 +10,44 @@ import { Menu, Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   
-  // Fetch user data from API
-  const { data: userData, isLoading } = useQuery({
-    queryKey: ['/api/user'],
+  // Get userId from localStorage
+  const userId = localStorage.getItem('userId') || '1'; // Default to 1 if not found
+  
+  // Fetch dashboard data from API
+  const { data: dashboardData, isLoading, error } = useQuery({
+    queryKey: ['/api/dashboard', userId],
     queryFn: async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/user');
+        const response = await fetch(`/api/dashboard/${userId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch user data');
+          if (response.status === 404) {
+            // If profile not found, redirect to survey page
+            toast({
+              title: "Profile Needed",
+              description: "Please complete the survey to personalize your experience.",
+            });
+            navigate("/survey");
+            return null;
+          }
+          throw new Error('Failed to fetch dashboard data');
         }
-        return await response.json();
+        const result = await response.json();
+        return result.success ? result.data : null;
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error fetching dashboard data:", error);
         toast({
           title: "Error",
-          description: "Failed to load user data",
+          description: "Failed to load dashboard data. Please try again.",
           variant: "destructive",
         });
-        // Return default data on error
         return null;
       }
     },
@@ -42,78 +57,78 @@ export default function Dashboard() {
   const [profile, setProfile] = useState({
     name: "Career Explorer",
     journey: "Getting Started",
-    progress: 0,
+    progress: 25,
   });
   
-  // Update profile when user data is loaded
-  useEffect(() => {
-    if (userData) {
-      setProfile({
-        name: userData.username || "Career Explorer",
-        journey: userData.level || "Getting Started",
-        progress: userData.progress || 0,
-      });
-    }
-  }, [userData]);
+  // Default goals, trends, activities, and next steps
+  const [goals, setGoals] = useState([
+    { id: "1", title: "Complete career assessment", completed: true, progress: 100 },
+    { id: "2", title: "Explore recommended careers", completed: false, progress: 30 },
+    { id: "3", title: "Research education pathways", completed: false, progress: 0 },
+  ]);
   
-  // Generate goals based on user profile
-  const generateGoals = () => {
-    if (userData && userData.subjects && userData.subjects.length > 0) {
-      const mainSubject = userData.subjects[0];
-      return [
-        { id: "1", title: `Learn more about ${mainSubject} careers`, completed: false, progress: 0 },
-        { id: "2", title: "Create a portfolio of skills", completed: false, progress: 0 },
-        { id: "3", title: "Research internship opportunities", completed: false, progress: 0 },
-      ];
-    }
-    return [
-      { id: "1", title: "Complete your profile", completed: false, progress: 0 },
-      { id: "2", title: "Identify top skills to develop", completed: false, progress: 0 },
-      { id: "3", title: "Research career paths", completed: false, progress: 0 },
-    ];
-  };
-  
-  const [goals] = useState(generateGoals());
-  
-  // Course recommendations
-  const [whatNext] = useState({
+  const [whatNext, setWhatNext] = useState({
     course: { title: "Exploring Career Paths" },
     video: { title: "How to Build a Professional Portfolio" },
   });
   
-  // Trending topics in career development
-  const [trends] = useState([
-    { id: "1", name: "Remote Work", primary: true, percentage: 78 },
-    { id: "2", name: "Digital Skills", percentage: 65 },
-    { id: "3", name: "Career Transition" },
-    { id: "4", name: "Freelancing" },
-    { id: "5", name: "Personal Branding" },
+  const [trends, setTrends] = useState([
+    { id: "1", name: "Career Planning", primary: true, percentage: 85 },
+    { id: "2", name: "Networking", percentage: 72 },
+    { id: "3", name: "Resume Building", percentage: 68 },
+    { id: "4", name: "Interview Skills", percentage: 65 },
   ]);
   
-  // Recent user activities
-  const [activities] = useState([
+  const [activities, setActivities] = useState([
     { 
       id: "1", 
-      type: "lesson" as const, 
-      title: "Career Exploration Workshop", 
-      time: "Just now",
+      type: "badge" as const, 
+      title: "Career Explorer", 
+      time: "2 days ago",
       isRecent: true 
     },
     { 
       id: "2", 
-      type: "badge" as const, 
-      title: "Profile Completion Badge", 
-      time: "Today",
+      type: "lesson" as const, 
+      title: "Introduction to Career Pathways", 
+      time: "5 days ago",
       isRecent: true
     },
     { 
       id: "3", 
       type: "course" as const, 
-      title: "Introduction to Career Planning", 
-      time: "Today",
-      isRecent: true 
+      title: "Career Decision Making", 
+      time: "1 week ago",
+      isRecent: false 
     },
   ]);
+  
+  // Update dashboard data when received from API
+  useEffect(() => {
+    if (dashboardData) {
+      setProfile({
+        name: dashboardData.username || "Career Explorer",
+        journey: "Getting Started",
+        progress: dashboardData.progress || 25,
+      });
+      
+      if (dashboardData.goals) {
+        setGoals(dashboardData.goals);
+      }
+      
+      if (dashboardData.nextSteps) {
+        setWhatNext(dashboardData.nextSteps);
+      }
+      
+      if (dashboardData.trendingTopics) {
+        setTrends(dashboardData.trendingTopics);
+      }
+      
+      if (dashboardData.activities) {
+        setActivities(dashboardData.activities);
+      }
+    }
+  }, [dashboardData]);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">

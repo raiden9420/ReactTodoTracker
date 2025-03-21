@@ -81,12 +81,20 @@ export default function Survey() {
     
     try {
       // Use the apiRequest function to call our Express API
-      const data = await apiRequest('/api/survey', {
+      const data = await apiRequest<{
+        success: boolean;
+        userId?: number;
+        profileId?: number;
+        message?: string;
+      }>('/api/survey', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(values),
       });
       
-      if (data.success) {
+      if (data && data.success) {
         toast({
           title: "Survey Submitted!",
           description: "Your career journey is ready to begin.",
