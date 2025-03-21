@@ -37,6 +37,33 @@ export interface Goal {
 }
 
 export const storage = {
+  async submitSurvey(surveyData: any) {
+    return new Promise((resolve, reject) => {
+      const stmt = db.prepare(
+        'INSERT INTO users (username, email, subjects, interests, skills, goal, thinking_style, extra_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      );
+      stmt.run(
+        [surveyData.name, surveyData.email, JSON.stringify(surveyData.subjects), surveyData.interests, surveyData.skills, surveyData.goal, surveyData.thinking_style, surveyData.extra_info],
+        function(err) {
+          if (err) reject(err);
+          resolve({ userId: this.lastID, profile: surveyData });
+        }
+      );
+    });
+  },
+
+  async getUserProfile(userId: number) {
+    return new Promise((resolve, reject) => {
+      db.get('SELECT subjects, interests, skills, goal, thinking_style, extra_info, created_at FROM users WHERE id = ?', [userId], (err, row) => {
+        if (err) reject(err);
+        if (row && row.subjects) {
+          row.subjects = JSON.parse(row.subjects);
+        }
+        resolve(row || null);
+      });
+    });
+  },
+
   async createUser(user: Omit<User, 'id'>): Promise<User> {
     return new Promise((resolve, reject) => {
       const stmt = db.prepare(
