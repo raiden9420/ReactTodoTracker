@@ -13,7 +13,6 @@ db.serialize(() => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
     name TEXT NOT NULL,
-    name TEXT NOT NULL,
     email TEXT NOT NULL,
     subjects TEXT NOT NULL,
     interests TEXT NOT NULL,
