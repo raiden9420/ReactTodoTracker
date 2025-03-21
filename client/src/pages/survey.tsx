@@ -63,6 +63,9 @@ export default function Survey() {
       subjects: [],
       interests: "",
       skills: "",
+      careerGoals: "",
+      thinkingStyle: "",
+      additionalInfo: "",
       goal: "",
       thinking_style: "Plan",
       extra_info: "",
@@ -329,6 +332,43 @@ export default function Survey() {
                           </FormLabel>
                         </FormItem>
                       </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Career Goals */}
+              <FormField
+                control={form.control}
+                name="careerGoals"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Career Goals</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="What are your career aspirations?"
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Thinking Style */}
+              <FormField
+                control={form.control}
+                name="thinkingStyle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Thinking Style</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="How do you approach problems?"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
