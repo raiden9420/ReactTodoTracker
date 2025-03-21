@@ -27,7 +27,7 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
 
   const handleAddGoal = async () => {
     if (!newGoalText.trim()) return;
-    
+
     setIsLoading(true);
     try {
       await apiRequest("/api/goals", {
@@ -41,14 +41,14 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
           "Content-Type": "application/json"
         }
       });
-      
+
       // Reset form
       setNewGoalText("");
       setIsAddingGoal(false);
-      
+
       // Invalidate goals cache to refresh
       queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
-      
+
       toast({
         title: "Goal added",
         description: "Your new learning goal has been added successfully."
@@ -63,38 +63,47 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
       setIsLoading(false);
     }
   };
-  
+
   const handleToggleGoal = async (goalId: string, completed: boolean) => {
+    setIsLoading(true);
     try {
-      await apiRequest(`/api/goals/${goalId}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          completed
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      
+      if (completed) {
+        // First mark as complete
+        await apiRequest(`/api/goals/${goalId}`, {
+          method: 'PUT',
+          body: { completed }
+        });
+
+        // Then delete after a short delay
+        setTimeout(async () => {
+          await apiRequest(`/api/goals/${goalId}`, {
+            method: 'DELETE'
+          });
+          queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
+        }, 500);
+      }
+
       // Invalidate goals cache to refresh
       queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update goal. Please try again.",
+        description: "Failed to update goal status",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
   const handleRefreshSuggestions = async () => {
     setIsLoading(true);
     try {
       await apiRequest(`/api/goals/suggest/${userId}`);
-      
+
       // Invalidate goals cache to refresh
       queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
-      
+
       toast({
         title: "Goals refreshed",
         description: "New goal suggestions have been generated based on your profile."
@@ -120,7 +129,7 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
         <p className="text-sm text-muted-foreground mb-4">
           Complete these tasks to improve your career readiness
         </p>
-        
+
         {isAddingGoal && (
           <div className="mb-4 flex space-x-2">
             <Input
@@ -134,7 +143,7 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
             </Button>
           </div>
         )}
-        
+
         <div className="space-y-4">
           {goals.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">
@@ -164,7 +173,7 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
             ))
           )}
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-2 mt-4">
           <Button 
             variant="ghost" 
