@@ -61,7 +61,7 @@ export default function Survey() {
     defaultValues: {
       name: "",
       email: "",
-      subjects: "",
+      subjects: [], // Updated default value
       interests: "",
       skills: "",
       goal: "",
