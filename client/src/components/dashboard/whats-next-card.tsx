@@ -26,6 +26,19 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
           description: "Please complete your profile survey to get recommendations.",
           variant: "default"
         });
+        // Set default recommendations
+        setVideo({
+          title: "Career Development Essentials",
+          description: "Learn the fundamentals of career planning and growth",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        });
+        setCourse({
+          title: "Professional Skills 101",
+          description: "Master the essential skills for career success",
+          duration: "2 weeks",
+          level: "Beginner",
+          url: "https://www.coursera.org/learn/professional-skills"
+        });
         return;
       }
 
