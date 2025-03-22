@@ -21,26 +21,27 @@ export const storage = {
   async submitSurvey(surveyData: Survey) {
     return new Promise((resolve, reject) => {
       const stmt = db.prepare(
-        'INSERT INTO users (username, name, email, subjects, interests, skills, goal, thinking_style, extra_info, avatar, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO user_profiles (user_id, subjects, interests, skills, goal, thinking_style, extra_info, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
       );
+      
+      // For demo, use user ID 1
+      const userId = 1;
+      
       stmt.run(
         [
-          surveyData.name, // Using name as username for simplicity
-          surveyData.name,
-          surveyData.email,
+          userId,
           JSON.stringify(surveyData.subjects),
           surveyData.interests,
           surveyData.skills,
           surveyData.goal,
           surveyData.thinking_style,
           surveyData.extra_info || '',
-          surveyData.avatar || null, // Handle avatar, allowing null if not provided
           new Date().toISOString()
         ],
         function(err) {
           if (err) reject(err);
           resolve({ 
-            userId: this.lastID, 
+            userId, 
             profile: {
               ...surveyData,
               created_at: new Date().toISOString()
