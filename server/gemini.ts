@@ -107,36 +107,41 @@ export async function getCourseRecommendation(profile: any) {
       const course = JSON.parse(jsonMatch[0]);
       
       // Validate and provide defaults if needed
+      // Generate category-based URLs for each platform
       const platforms = {
-        'coursera': 'https://www.coursera.org/courses?query=',
-        'udemy': 'https://www.udemy.com/courses/search/?q=',
-        'edx': 'https://www.edx.org/search?q=',
-        'linkedin': 'https://www.linkedin.com/learning/search?keywords='
+        'Coursera': (subject: string) => `https://www.coursera.org/browse/${encodeURIComponent(subject.toLowerCase())}`,
+        'Udemy': (subject: string) => `https://www.udemy.com/topic/${encodeURIComponent(subject.toLowerCase())}`,
+        'edX': (subject: string) => `https://www.edx.org/learn/${encodeURIComponent(subject.toLowerCase())}`,
+        'LinkedIn Learning': (subject: string) => `https://www.linkedin.com/learning/topics/${encodeURIComponent(subject.toLowerCase())}`
       };
+      
+      const subject = profile.subjects[0].toLowerCase();
+      const platform = course.platform || "Coursera";
+      const platformUrl = platforms[platform as keyof typeof platforms];
       
       return {
         success: true,
         course: {
-          title: course.title || "Career Development Course",
-          description: course.description || "Learn essential career skills",
-          duration: course.duration || "4 weeks",
-          level: course.level || "Beginner",
-          platform: course.platform || "Coursera",
-          url: course.url || `${platforms.coursera}${encodeURIComponent(profile.subjects[0])}`
+          title: `Explore ${subject} Courses`,
+          description: `Browse top-rated ${subject} courses and start learning today`,
+          duration: "Self-paced",
+          level: "All levels",
+          platform: platform,
+          url: platformUrl(subject)
         }
       };
     } catch (parseError) {
       console.error("Error parsing course recommendation:", parseError);
-      const fallbackSubject = profile.subjects[0] || "career development";
+      const fallbackSubject = profile.subjects[0] || "career-development";
       return {
         success: true,
         course: {
-          title: "Professional Development Course",
-          description: "Master essential skills in your field",
-          duration: "6 weeks",
-          level: "Beginner",
-          platform: "Udemy",
-          url: `https://www.udemy.com/courses/search/?q=${encodeURIComponent(fallbackSubject)}`
+          title: `Explore ${fallbackSubject.replace('-', ' ')} Courses`,
+          description: `Browse top-rated courses in ${fallbackSubject.replace('-', ' ')}`,
+          duration: "Self-paced",
+          level: "All levels",
+          platform: "Coursera",
+          url: `https://www.coursera.org/browse/${encodeURIComponent(fallbackSubject)}`
         }
       };
     }
