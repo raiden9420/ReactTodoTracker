@@ -192,29 +192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         progress: 25, // Sample progress percentage
         goals: formattedGoals,
         trendingTopics: await fetchTrends(profile.subjects[0] || "Career Development"), //Call the new function here
-        activities: [
-          {
-            id: "1",
-            type: "badge",
-            title: "Career Explorer",
-            time: "2 days ago",
-            isRecent: true,
-          },
-          {
-            id: "2",
-            type: "lesson",
-            title: "Introduction to Career Pathways",
-            time: "5 days ago",
-            isRecent: true,
-          },
-          {
-            id: "3",
-            type: "course",
-            title: "Career Decision Making",
-            time: "1 week ago",
-            isRecent: false,
-          },
-        ],
+        activities: await storage.getActivities(userId),
         nextSteps: {
           course: { title: "Skills Assessment Workshop" },
           video: { title: "How to Network Effectively" },
@@ -570,6 +548,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // DELETE a goal
+  // POST create a new activity
+  app.post("/api/activities", async (req: Request, res: Response) => {
+    try {
+      const { userId, type, title } = req.body;
+      
+      if (!userId || !type || !title) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing required fields"
+        });
+      }
+
+      await storage.createActivity({ userId, type, title });
+
+      return res.status(201).json({
+        success: true,
+        message: "Activity recorded successfully"
+      });
+    } catch (error) {
+      console.error("Error creating activity:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to record activity"
+      });
+    }
+  });
+
   app.delete("/api/goals/:id", async (req: Request, res: Response) => {
     try {
       const goalId = req.params.id;

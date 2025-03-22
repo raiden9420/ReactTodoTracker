@@ -22,16 +22,16 @@ export const storage = {
     return new Promise((resolve, reject) => {
       // First ensure the default user exists
       db.run(`INSERT OR IGNORE INTO users (id, username, password) VALUES (1, 'default', 'default')`);
-      
+
       // Delete existing profile if any
       db.run('DELETE FROM user_profiles WHERE user_id = 1');
-      
+
       const stmt = db.prepare(
         'INSERT INTO user_profiles (user_id, subjects, interests, skills, goal, thinking_style, extra_info, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
       );
-      
+
       const userId = 1;
-      
+
       stmt.run(
         [
           userId,
@@ -175,5 +175,51 @@ export const storage = {
         resolve(true);
       });
     });
+  },
+
+  // Activity tracking
+  async createActivity(activity: {
+    userId: number;
+    type: 'lesson' | 'badge' | 'course';
+    title: string;
+  }) {
+    const timestamp = new Date().toISOString();
+    await db.run(
+      'INSERT INTO activities (user_id, type, title, created_at) VALUES (?, ?, ?, ?)',
+      [activity.userId, activity.type, activity.title, timestamp]
+    );
+  },
+
+  async getActivities(userId: number) {
+    const activities = await db.all(
+      'SELECT * FROM activities WHERE user_id = ? ORDER BY created_at DESC LIMIT 5',
+      [userId]
+    );
+
+    return activities.map(activity => ({
+      id: activity.id,
+      type: activity.type,
+      title: activity.title,
+      time: formatTimeAgo(new Date(activity.created_at)),
+      isRecent: isRecent(new Date(activity.created_at))
+    }));
   }
 };
+
+
+function formatTimeAgo(date: Date) {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  return `${Math.floor(days / 7)} weeks ago`;
+}
+
+function isRecent(date: Date) {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  return diff < 1000 * 60 * 60 * 24 * 2; // Less than 2 days old
+}
