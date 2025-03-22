@@ -4,16 +4,16 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 
+type TrendingTopicsProps = {
+  userId: string;
+};
+
 type Trend = {
   id: string;
   title: string;
   description: string;
   url: string;
   type: 'article' | 'post';
-};
-
-type TrendingTopicsProps = {
-  userId: string;
 };
 
 async function fetchTrends(subject: string) {
