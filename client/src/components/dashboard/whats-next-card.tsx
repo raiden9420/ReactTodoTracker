@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+import { useQuery } from '@tanstack/react-query';
 import { BookOpen, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -42,7 +42,7 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
       const courseResponse = await fetch(`/api/course-recommendation/${userId}`);
       const courseData = await courseResponse.json();
       console.log('Course recommendation response:', courseData);
-      
+
       if (courseData.success && courseData.course) {
         setCourse(courseData.course);
       } else {
