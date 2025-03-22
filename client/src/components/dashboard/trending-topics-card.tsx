@@ -20,16 +20,19 @@ async function fetchTrends(subject: string) {
   const response = await fetch(`/api/career-trends/${encodeURIComponent(subject)}`);
   if (!response.ok) throw new Error('Failed to fetch trends');
   const data = await response.json();
+  if (!data.success) throw new Error(data.message || 'Failed to fetch trends');
   return data.data;
 }
 
 export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
-  const { data: trends = [], isLoading, refetch } = useQuery({
+  const { data: trends = [], isLoading, refetch, error } = useQuery({
     queryKey: ['career-trends', userId],
     queryFn: async () => {
       const userResponse = await fetch(`/api/user/${userId}`);
+      if (!userResponse.ok) throw new Error('Failed to fetch user data');
       const userData = await userResponse.json();
-      const subject = userData.user.subjects?.[0] || 'Career Development';
+      if (!userData.success) throw new Error('Failed to fetch user data');
+      const subject = userData.user?.subjects?.[0] || 'Career Development';
       return fetchTrends(subject);
     },
     enabled: !!userId,
