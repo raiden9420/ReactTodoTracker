@@ -113,12 +113,16 @@ export default function Dashboard() {
     }
   }, [dashboardData]);
 
+  const toggleCareerCoach = () => {
+    setIsCareerCoachOpen(!isCareerCoachOpen);
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <Sidebar 
         isOpen={isSidebarOpen} 
-        setIsOpen={setIsSidebarOpen}
-        profile={profile}
+        onOpenChange={setIsSidebarOpen}
+        onCareerCoachClick={toggleCareerCoach}
       />
 
       <main className="flex-1 min-w-0">
@@ -166,14 +170,7 @@ export default function Dashboard() {
             <TrendingTopicsCard userId={userId} />
             <RecentActivityCard activities={activities} />
           </div>
-          <Button
-            variant="outline"
-            className="fixed right-4 bottom-4 z-50"
-            onClick={() => setIsCareerCoachOpen(true)}
-          >
-            Career Coach
-          </Button>
-          <CareerCoach isOpen={isCareerCoachOpen} onClose={() => setIsCareerCoachOpen(false)} />
+          {isCareerCoachOpen && <CareerCoach isOpen={isCareerCoachOpen} onClose={() => setIsCareerCoachOpen(false)} />}
         </div>
       </main>
     </div>
