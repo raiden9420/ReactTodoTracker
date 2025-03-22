@@ -107,6 +107,13 @@ export async function getCourseRecommendation(profile: any) {
       const course = JSON.parse(jsonMatch[0]);
       
       // Validate and provide defaults if needed
+      const platforms = {
+        'coursera': 'https://www.coursera.org/courses?query=',
+        'udemy': 'https://www.udemy.com/courses/search/?q=',
+        'edx': 'https://www.edx.org/search?q=',
+        'linkedin': 'https://www.linkedin.com/learning/search?keywords='
+      };
+      
       return {
         success: true,
         course: {
@@ -114,21 +121,22 @@ export async function getCourseRecommendation(profile: any) {
           description: course.description || "Learn essential career skills",
           duration: course.duration || "4 weeks",
           level: course.level || "Beginner",
-          platform: course.platform || "EdX",
-          url: course.url || "https://www.edx.org/learn/career-development"
+          platform: course.platform || "Coursera",
+          url: course.url || `${platforms.coursera}${encodeURIComponent(profile.subjects[0])}`
         }
       };
     } catch (parseError) {
       console.error("Error parsing course recommendation:", parseError);
+      const fallbackSubject = profile.subjects[0] || "career development";
       return {
         success: true,
         course: {
-          title: "Professional Development Essentials",
-          description: "Master key skills for career growth",
+          title: "Professional Development Course",
+          description: "Master essential skills in your field",
           duration: "6 weeks",
           level: "Beginner",
-          platform: "LinkedIn Learning",
-          url: "https://www.linkedin.com/learning"
+          platform: "Udemy",
+          url: `https://www.udemy.com/courses/search/?q=${encodeURIComponent(fallbackSubject)}`
         }
       };
     }
