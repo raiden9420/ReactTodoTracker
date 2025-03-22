@@ -640,7 +640,7 @@ async function fetchTrends(subject: string) {
 
   try {
     const query = encodeURIComponent(`${subject} jobs career trends -is:retweet -is:reply lang:en`);
-    const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=created_at,public_metrics&max_results=5`, {
+    const response = await fetch(`https://api.twitter.com/1.1/search/tweets.json?q=${query}&result_type=mixed&count=5`, {
       headers: {
         'Authorization': `Bearer ${process.env.X_API_KEY}`,
         'Content-Type': 'application/json'
@@ -654,19 +654,19 @@ async function fetchTrends(subject: string) {
     }
 
     const data = await response.json();
-    if (!data.data || !Array.isArray(data.data)) {
+    if (!data.statuses || !Array.isArray(data.statuses)) {
       console.warn('Invalid response format from X API');
       return trends;
     }
 
-    const xPosts = data.data
+    const xPosts = data.statuses
       .slice(0, 2)
-      .filter(post => post.text && post.id)
+      .filter(post => post.text && post.id_str)
       .map((post, index) => ({
         id: `x-${index}`,
         title: `Latest in ${subject}`,
         description: post.text.length > 150 ? post.text.substring(0, 147) + '...' : post.text,
-        url: `https://twitter.com/i/web/status/${post.id}`,
+        url: `https://twitter.com/i/web/status/${post.id_str}`,
         type: 'post',
         metrics: post.public_metrics || {}
       }));
