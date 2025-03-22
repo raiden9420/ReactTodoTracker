@@ -114,7 +114,7 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
               <Button 
                 variant="outline" 
                 className="w-full mt-3"
-                onClick={() => window.open(course.url, '_blank')}
+                onClick={() => window.location.href = course.url}
               >
                 Start Learning
               </Button>
