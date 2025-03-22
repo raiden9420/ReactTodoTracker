@@ -1,4 +1,4 @@
-import { TrendingUp, RefreshCw, BookOpen, Twitter } from "lucide-react";
+import { TrendingUp, RefreshCw, BookOpen, Twitter as X } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -95,7 +95,7 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
                     {trend.type === 'article' ? (
                       <BookOpen className="h-5 w-5 text-primary" />
                     ) : (
-                      <Twitter className="h-5 w-5 text-primary" />
+                      <X className="h-5 w-5 text-primary" />
                     )}
                   </div>
                   <div className="flex-1">
