@@ -74,33 +74,35 @@ export default function Dashboard() {
   const [trends, setTrends] = useState([]);
   const [activities, setActivities] = useState([]);
 
-  // Update dashboard data when received from API
+  // Fetch initial dashboard data
   useEffect(() => {
-    if (dashboardData) {
-      setProfile({
-        name: dashboardData.username || "Career Explorer",
-        avatar: dashboardData.avatar || "",
-        journey: dashboardData.journey || "Getting Started",
-        progress: dashboardData.progress || 25,
-      });
+    const fetchDashboardData = async () => {
+      try {
+        const response = await fetch(`/api/dashboard/${userId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setProfile({
+            name: data.user?.username || "Career Explorer",
+            avatar: data.user?.avatar || "",
+            journey: data.user?.journey || "Getting Started",
+            progress: data.user?.progress || 25,
+          });
 
-      if (dashboardData.goals) {
-        setGoals(dashboardData.goals);
+          setGoals(data.goals || []);
+          setWhatNext(data.nextSteps || { course: null });
+          setTrends(data.trendingTopics || []);
+          setActivities(data.activities || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
       }
+    };
 
-      if (dashboardData.nextSteps) {
-        setWhatNext(dashboardData.nextSteps);
-      }
-
-      if (dashboardData.trendingTopics) {
-        setTrends(dashboardData.trendingTopics);
-      }
-
-      if (dashboardData.activities) {
-        setActivities(dashboardData.activities);
-      }
+    if (userId) {
+      fetchDashboardData();
     }
-  }, [dashboardData]);
+  }, [userId]);
 
   const toggleCareerCoach = () => {
     setIsCareerCoachOpen(!isCareerCoachOpen);
