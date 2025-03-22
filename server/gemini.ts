@@ -76,17 +76,17 @@ export async function getCourseRecommendation(profile: any) {
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const prompt = `Based on this user profile with subjects: ${profile.subjects.join(", ")}, interests: ${profile.interests}, and skills: ${profile.skills}, recommend a real, currently available online course from a major learning platform.
+    const prompt = `Based on this user profile with subjects: ${profile.subjects.join(", ")}, interests: ${profile.interests}, and skills: ${profile.skills}, recommend a real, currently available Udemy course.
 
-    Important: Please provide ONLY real, existing courses with their actual URLs from platforms like Coursera, Udemy, or edX. DO NOT generate fake URLs.
+    Important: Please provide ONLY real, existing Udemy courses with their actual URLs. The URL should be in the format "https://www.udemy.com/course/[course-slug]". Verify the course exists before suggesting.
 
     Format the response as a JSON object with properties:
-    - title: The exact course title as shown on the platform
-    - description: The actual course description
+    - title: The exact Udemy course title
+    - description: The actual course description from Udemy
     - duration: Real course duration
     - level: Actual course difficulty level
-    - platform: The platform name (Coursera/Udemy/edX)
-    - url: The complete, real URL to the course page
+    - platform: "Udemy"
+    - url: The complete, real Udemy course URL
 
     Example format:
     {
@@ -113,26 +113,16 @@ export async function getCourseRecommendation(profile: any) {
       
       // Validate and provide defaults if needed
       // Generate category-based URLs for each platform
-      const platforms = {
-        'Coursera': (subject: string) => `https://www.coursera.org/browse/${encodeURIComponent(subject.toLowerCase())}`,
-        'Udemy': (subject: string) => `https://www.udemy.com/topic/${encodeURIComponent(subject.toLowerCase())}`,
-        'edX': (subject: string) => `https://www.edx.org/learn/${encodeURIComponent(subject.toLowerCase())}`,
-        'LinkedIn Learning': (subject: string) => `https://www.linkedin.com/learning/topics/${encodeURIComponent(subject.toLowerCase())}`
-      };
-      
-      const subject = profile.subjects[0].toLowerCase();
-      const platform = course.platform || "Coursera";
-      const platformUrl = platforms[platform as keyof typeof platforms];
-      
+      // Return the course directly from Gemini's response
       return {
         success: true,
         course: {
-          title: `Explore ${subject} Courses`,
-          description: `Browse top-rated ${subject} courses and start learning today`,
-          duration: "Self-paced",
-          level: "All levels",
-          platform: platform,
-          url: platformUrl(subject)
+          title: course.title || "Recommended Course",
+          description: course.description || "Learn essential skills in your field",
+          duration: course.duration || "Self-paced",
+          level: course.level || "All levels",
+          platform: "Udemy",
+          url: course.url || `https://www.udemy.com/courses/search/?q=${encodeURIComponent(profile.subjects[0])}`
         }
       };
     } catch (parseError) {
