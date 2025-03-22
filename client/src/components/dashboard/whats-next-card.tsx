@@ -42,16 +42,31 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
 
   useEffect(() => {
     const checkProfileAndFetch = async () => {
+      if (!userId) return;
+      
       try {
-        // Check if user has profile first
+        setIsLoading(true);
         const profileResponse = await fetch(`/api/user/${userId}`);
         const profileData = await profileResponse.json();
         
         if (profileData.success && profileData.user.hasProfile) {
-          fetchRecommendations();
+          await fetchRecommendations();
+        } else {
+          toast({
+            title: "Profile Required",
+            description: "Please complete your profile survey first to get personalized recommendations.",
+            variant: "default"
+          });
         }
       } catch (error) {
         console.error('Error checking user profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to check profile status. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
     

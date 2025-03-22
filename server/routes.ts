@@ -225,15 +225,16 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
     // Get the user profile
     const profile = await storage.getUserProfile(userId);
     
-    if (!profile) {
+    if (!profile || !profile.subjects || !profile.interests) {
       return res.status(404).json({ 
         success: false, 
-        message: "User profile not found" 
+        message: "Complete user profile not found. Please complete the survey first." 
       });
     }
 
-    // Get primary subject
+    // Get primary subject and ensure data exists
     const primarySubject = profile.subjects[0] || "career development";
+    const interests = profile.interests?.split(',')[0]?.trim() || "professional development";
     
     // Generate search query based on profile
     const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
