@@ -141,7 +141,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <GoalsCard goals={goals} userId={parseInt(userId)} />
             <WhatsNextCard userId={parseInt(userId)} course={whatNext.course} />
-            <TrendingTopicsCard topics={trends} />
+            <TrendingTopicsCard userId={userId} />
             <RecentActivityCard activities={activities} />
           </div>
         </div>
