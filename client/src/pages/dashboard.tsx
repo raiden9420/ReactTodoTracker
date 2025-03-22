@@ -138,9 +138,9 @@ export default function Dashboard() {
         {/* Dashboard Content */}
         <div className="p-4 sm:p-6 space-y-6">
           <WelcomeSection 
-            username={data?.user?.username || "User"} 
-            progress={data?.user?.progress || 0} 
-            avatar={data?.user?.avatar} 
+            username={dashboardData?.user?.username || "User"} 
+            progress={dashboardData?.user?.progress || 0} 
+            avatar={dashboardData?.user?.avatar} 
           />
 
           {/* Dashboard Grids */}
