@@ -25,7 +25,7 @@ async function fetchTrends(subject: string) {
 }
 
 export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
-  const { data: trends = [], isLoading, refetch, error } = useQuery({
+  const { data: trends = [], isLoading, refetch, error, isError } = useQuery({
     queryKey: ['career-trends', userId],
     queryFn: async () => {
       try {
@@ -64,7 +64,11 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {isLoading ? (
+          {isError ? (
+            <p className="text-sm text-red-500 text-center py-4">
+              Failed to load trends. Please try again.
+            </p>
+          ) : isLoading ? (
             <p className="text-sm text-muted-foreground text-center py-4">
               Loading trends...
             </p>
@@ -96,7 +100,7 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
             ))
           ) : (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No trends available. Try refreshing.
+              No trends available at the momentg.
             </p>
           )}
         </div>
