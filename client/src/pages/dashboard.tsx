@@ -74,25 +74,42 @@ export default function Dashboard() {
   const [trends, setTrends] = useState([]);
   const [activities, setActivities] = useState([]);
 
-  // Fetch initial dashboard data
+  // Update dashboard data when received from API
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         const response = await fetch(`/api/dashboard/${userId}`);
         const data = await response.json();
-        
-        if (data.success) {
+
+        if (data.success && data.data) {
           setProfile({
-            name: data.user?.username || "Career Explorer",
-            avatar: data.user?.avatar || "",
-            journey: data.user?.journey || "Getting Started",
-            progress: data.user?.progress || 25,
+            name: data.data.username || "Career Explorer",
+            avatar: data.data.avatar || "",
+            journey: "Getting Started",
+            progress: data.data.progress || 25,
           });
 
-          setGoals(data.goals || []);
-          setWhatNext(data.nextSteps || { course: null });
-          setTrends(data.trendingTopics || []);
-          setActivities(data.activities || []);
+          // Handle goals data properly
+          if (data.data.goals) {
+            setGoals(data.data.goals.map((goal: any) => ({
+              id: goal.id,
+              title: goal.title,
+              completed: goal.completed,
+              progress: goal.progress || 0
+            })));
+          }
+
+          if (data.data.nextSteps) {
+            setWhatNext(data.data.nextSteps);
+          }
+
+          if (data.data.trendingTopics) {
+            setTrends(data.data.trendingTopics);
+          }
+
+          if (data.data.activities) {
+            setActivities(data.data.activities);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
