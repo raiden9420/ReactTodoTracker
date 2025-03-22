@@ -41,8 +41,22 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
   };
 
   useEffect(() => {
-    fetchRecommendations();
-  }, []);
+    const checkProfileAndFetch = async () => {
+      try {
+        // Check if user has profile first
+        const profileResponse = await fetch(`/api/user/${userId}`);
+        const profileData = await profileResponse.json();
+        
+        if (profileData.success && profileData.user.hasProfile) {
+          fetchRecommendations();
+        }
+      } catch (error) {
+        console.error('Error checking user profile:', error);
+      }
+    };
+    
+    checkProfileAndFetch();
+  }, [userId]);
 
   return (
     <Card>
