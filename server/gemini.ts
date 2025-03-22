@@ -4,7 +4,7 @@ if (!process.env.GEMINI_API_KEY) {
   throw new Error("GEMINI_API_KEY environment variable is required");
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+export const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function suggestGoals(subjects: string[], skills: string, interests: string, count: number = 2): Promise<string[]> {
   try {
