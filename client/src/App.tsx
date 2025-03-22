@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import Dashboard from "@/pages/dashboard";
 import Survey from "@/pages/survey";
 import NotFound from "@/pages/not-found";
+// Placeholder component for Career Coach page
+const CareerCoach = () => <div>Career Coach Landing Page</div>;
 
 function AppRouter() {
   const [location] = useLocation();
@@ -52,6 +54,7 @@ function AppRouter() {
       <Route path="/survey" component={Survey} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/" component={Dashboard} />
+      <Route path="/career-coach" component={CareerCoach} />
       <Route component={NotFound} />
     </Switch>
   );
