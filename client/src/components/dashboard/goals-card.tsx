@@ -30,7 +30,7 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
 
     setIsLoading(true);
     try {
-      await apiRequest("/api/goals", {
+      const response = await apiRequest("/api/goals", {
         method: "POST",
         body: JSON.stringify({
           task: newGoalText,
@@ -42,12 +42,29 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
         }
       });
 
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to add goal');
+      }
+
       // Reset form
       setNewGoalText("");
       setIsAddingGoal(false);
 
       // Invalidate goals cache to refresh
       queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
+
+      // Create activity for the new goal
+      await apiRequest("/api/activities", {
+        method: "POST",
+        body: JSON.stringify({
+          userId,
+          type: "goal_created",
+          title: `Created new goal: ${newGoalText}`
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
 
       toast({
         title: "Goal added",

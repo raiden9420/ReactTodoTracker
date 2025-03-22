@@ -490,13 +490,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Create the goal with default progress
+      const goalData = {
+        ...validatedData.data,
+        progress: 0
+      };
+
       // Create the goal
-      const newGoal = await storage.createGoal(validatedData.data);
+      const newGoal = await storage.createGoal(goalData);
+
+      if (!newGoal) {
+        throw new Error("Failed to create goal");
+      }
 
       return res.status(201).json({
         success: true,
         message: "Goal created successfully",
-        data: newGoal,
+        data: {
+          id: newGoal.id,
+          title: newGoal.task,
+          completed: newGoal.completed,
+          progress: 0
+        },
       });
     } catch (error) {
       console.error("Error creating goal:", error);
