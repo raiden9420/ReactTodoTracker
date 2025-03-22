@@ -17,22 +17,18 @@ function AppRouter() {
   const [isNewUser, setIsNewUser] = useState(true);
   
   // Check if user has profile
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['/api/user/1'],
     queryFn: async () => {
-      try {
-        const response = await fetch('/api/user/1');
-        if (!response.ok) {
-          throw new Error('Failed to fetch user profile');
-        }
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error("Error checking user profile:", error);
-        return { success: false };
-      }
+      const response = await fetch('/api/user/1');
+      const data = await response.json();
+      return data;
     },
-    retry: 1,
+    retry: 0,
+    onError: () => {
+      // Silently fail for new users
+      return { success: false };
+    }
   });
   
   useEffect(() => {
