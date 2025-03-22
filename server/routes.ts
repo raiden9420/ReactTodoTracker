@@ -621,7 +621,7 @@ async function validateRequest(req: any, res: any, next: any) {
 }
 
 async function fetchTrends(subject: string) {
-  return [
+  const trends = [
     {
       id: "trend1",
       title: `Top Skills in ${subject} for 2024`,
@@ -635,15 +635,76 @@ async function fetchTrends(subject: string) {
       description: `Latest market trends and future projections for careers in ${subject}.`,
       url: `https://www.onetonline.org/find/quick?s=${encodeURIComponent(subject)}`,
       type: "article",
-    },
-    {
-      id: "trend3",
-      title: `${subject} Career Guide`,
-      description: `Comprehensive guide to building a successful career in ${subject}, including skills, certifications, and job search strategies.`,
-      url: `https://www.onetonline.org/find/career?s=${encodeURIComponent(subject)}`,
-      type: "article",
     }
   ];
+
+  if (!process.env.X_API_KEY) {
+    console.warn('X_API_KEY not configured');
+    return trends;
+  }
+
+  try {
+    const query = encodeURIComponent(`${subject} career OR ${subject} trends OR ${subject} jobs -is:retweet -is:reply lang:en`);
+    const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=public_metrics,created_at,author_id&max_results=10`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.X_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('X API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: errorText
+      });
+      if (response.status === 429) {
+        console.log('X API rate limited, using default trends');
+      }
+      return trends;
+    }
+
+    const data = await response.json();
+    console.log('X API Response:', JSON.stringify(data, null, 2));
+
+    if (!data.data || !Array.isArray(data.data)) {
+      console.warn('Invalid response format from X API');
+      return trends;
+    }
+
+    // Filter and sort tweets by engagement, get only the top one
+    const relevantTweets = data.data
+      .filter(tweet => 
+        tweet.text.toLowerCase().includes(subject.toLowerCase()) &&
+        tweet.public_metrics &&
+        (tweet.public_metrics.like_count > 0 || tweet.public_metrics.retweet_count > 0)
+      )
+      .sort((a, b) => {
+        const aEngagement = (a.public_metrics?.like_count || 0) + (a.public_metrics?.retweet_count || 0);
+        const bEngagement = (b.public_metrics?.like_count || 0) + (b.public_metrics?.retweet_count || 0);
+        return bEngagement - aEngagement;
+      })
+      .slice(0, 1);
+
+    const xPosts = relevantTweets.map((tweet, index) => ({
+      id: `x-${index}`,
+      title: `Trending in ${subject}`,
+      description: tweet.text.length > 150 ? tweet.text.substring(0, 147) + '...' : tweet.text,
+      url: `https://twitter.com/i/web/status/${tweet.id}`,
+      type: 'post',
+      metrics: {
+        like_count: tweet.public_metrics.like_count,
+        retweet_count: tweet.public_metrics.retweet_count
+      }
+    }));
+
+    return [...trends, ...xPosts];
+  } catch (error) {
+    console.error('Error fetching X posts:', error);
+    return trends;
+  }
 }
 
 function generateTrendingTopics(subjects: string[]) {
