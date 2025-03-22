@@ -60,16 +60,23 @@ export const storage = {
   async getUserProfile(userId: number) {
     return new Promise((resolve, reject) => {
       db.get('SELECT subjects, interests, skills, goal, thinking_style, extra_info, created_at FROM user_profiles WHERE user_id = ?', [userId], (err, row) => {
-        if (err) reject(err);
-        if (row && row.subjects) {
-          try {
-            row.subjects = JSON.parse(row.subjects);
-          } catch (e) {
-            console.error('Error parsing subjects:', e);
-            row.subjects = [];
-          }
+        if (err) {
+          console.error('Database error:', err);
+          reject(err);
+          return;
         }
-        resolve(row || null);
+        if (!row) {
+          resolve(null);
+          return;
+        }
+        try {
+          row.subjects = JSON.parse(row.subjects || '[]');
+          resolve(row);
+        } catch (e) {
+          console.error('Error parsing subjects:', e);
+          row.subjects = [];
+          resolve(row);
+        }
       });
     });
   },
