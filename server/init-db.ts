@@ -16,6 +16,9 @@ db.serialize(() => {
     password TEXT NOT NULL
   )`);
 
+  // Insert default user if not exists
+  db.run(`INSERT OR IGNORE INTO users (id, username, password) VALUES (1, 'default', 'default')`);
+
   // Create user_profiles table
   db.run(`CREATE TABLE IF NOT EXISTS user_profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

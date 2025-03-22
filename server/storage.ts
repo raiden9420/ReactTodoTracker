@@ -20,11 +20,16 @@ process.on('exit', () => {
 export const storage = {
   async submitSurvey(surveyData: Survey) {
     return new Promise((resolve, reject) => {
+      // First ensure the default user exists
+      db.run(`INSERT OR IGNORE INTO users (id, username, password) VALUES (1, 'default', 'default')`);
+      
+      // Delete existing profile if any
+      db.run('DELETE FROM user_profiles WHERE user_id = 1');
+      
       const stmt = db.prepare(
         'INSERT INTO user_profiles (user_id, subjects, interests, skills, goal, thinking_style, extra_info, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
       );
       
-      // For demo, use user ID 1
       const userId = 1;
       
       stmt.run(
