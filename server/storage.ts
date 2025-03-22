@@ -191,18 +191,25 @@ export const storage = {
   },
 
   async getActivities(userId: number) {
-    const activities = await db.all(
-      'SELECT * FROM activities WHERE user_id = ? ORDER BY created_at DESC LIMIT 5',
-      [userId]
-    );
-
-    return activities.map(activity => ({
+    return new Promise((resolve, reject) => {
+      db.all(
+        'SELECT * FROM activities WHERE user_id = ? ORDER BY created_at DESC LIMIT 5',
+        [userId],
+        (err, activities) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(activities.map(activity => ({
       id: activity.id,
       type: activity.type,
       title: activity.title,
       time: formatTimeAgo(new Date(activity.created_at)),
       isRecent: isRecent(new Date(activity.created_at))
-    }));
+    })));
+        }
+      );
+    });
   }
 };
 
