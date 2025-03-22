@@ -665,17 +665,17 @@ function generateTrendingTopics(subjects: string[]) {
   return [
     {
       id: "trend1",
-      title: `${currentYear} ${primarySubject} Trends`,
+      title: `${currentYear} ${primarySubject} Industry Report`,
       description: `Latest industry developments and in-demand skills for ${primarySubject}.`,
-      url: "https://www.linkedin.com/learning",
-      type: "industry",
+      url: `https://www.bls.gov/ooh/occupation-finder.htm?pay=&education=&training=&newjobs=&growth=&submit=GO`,
+      type: "article",
     },
     {
       id: "trend2",
-      title: `Emerging ${primarySubject} Roles`,
+      title: `Emerging ${primarySubject} Career Paths`,
       description: `Hot jobs and career opportunities in ${primarySubject}.`,
-      url: "https://www.linkedin.com/learning",
-      type: "careers",
+      url: `https://www.onetonline.org/find/quick?s=${encodeURIComponent(primarySubject)}`,
+      type: "post",
     },
   ];
 }
