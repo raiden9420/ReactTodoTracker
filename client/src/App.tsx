@@ -15,7 +15,7 @@ function AppRouter() {
   const [location] = useLocation();
   const [checkingUser, setCheckingUser] = useState(true);
   const [isNewUser, setIsNewUser] = useState(true);
-  
+
   // Check if user has profile
   const { data, isLoading } = useQuery({
     queryKey: ['/api/user/1'],
@@ -30,14 +30,14 @@ function AppRouter() {
       return { success: false };
     }
   });
-  
+
   useEffect(() => {
     if (!isLoading) {
       setIsNewUser(!data?.success || !data?.user?.hasProfile);
       setCheckingUser(false);
     }
   }, [data, isLoading]);
-  
+
   // If we're on root path, check if user is new and redirect accordingly
   if (location === "/" && !checkingUser) {
     if (isNewUser) {
@@ -46,7 +46,7 @@ function AppRouter() {
       return <Redirect to="/dashboard" />;
     }
   }
-  
+
   return (
     <Switch>
       <Route path="/survey" component={Survey} />
