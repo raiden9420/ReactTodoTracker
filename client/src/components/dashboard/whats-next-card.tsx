@@ -3,7 +3,6 @@ import { BookOpen, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { useToast } from "@/components/ui/use-toast";
 
 type WhatsNextProps = {
   userId: number;
