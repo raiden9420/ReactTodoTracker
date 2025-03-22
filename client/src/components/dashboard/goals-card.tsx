@@ -102,8 +102,9 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
     try {
       await apiRequest(`/api/goals/suggest/${userId}`);
 
-      // Invalidate goals cache to refresh
+      // Invalidate goals and recommendations cache to refresh
       queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/personalized-recommendations/${userId}`] });
 
       toast({
         title: "Goals refreshed",
