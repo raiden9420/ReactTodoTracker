@@ -1,4 +1,3 @@
-
 import { TrendingUp, RefreshCw, BookOpen, Twitter } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,7 +54,7 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
     enabled: !!userId,
     refetchInterval: 1000 * 60 * 30, // Refresh every 30 minutes
   });
-  
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
