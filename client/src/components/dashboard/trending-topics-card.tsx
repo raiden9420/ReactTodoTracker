@@ -89,35 +89,26 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
             </p>
           ) : trends.length > 0 ? (
             trends.map((trend: Trend) => (
-              <div key={trend.id} className="bg-accent/50 rounded-lg p-4 hover:bg-accent/70 transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-md bg-primary/10 p-2">
-                    {trend.type === 'article' ? (
-                      <BookOpen className="h-5 w-5 text-primary" />
-                    ) : (
-                      <X className="h-5 w-5 text-primary" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium leading-tight">{trend.title}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">{trend.description}</p>
-                    <div className="flex flex-col gap-2 mt-2">
-                      {trend.type === 'post' && trend.metrics && (
-                        <div className="flex gap-4 text-xs text-muted-foreground">
-                          <span>♥ {trend.metrics.like_count || 0}</span>
-                          <span>🔄 {trend.metrics.retweet_count || 0}</span>
-                        </div>
-                      )}
-                      <a 
-                        href={trend.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-sm text-primary hover:underline"
-                      >
-                        {trend.type === 'article' ? 'Read article' : 'View post'} →
-                      </a>
-                    </div>
-                  </div>
+              <div key={trend.id} className="flex items-start space-x-4">
+                <div className="rounded-full bg-muted p-2">
+                  {trend.type === 'post' ? <X className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">{trend.title}</h3>
+                  <p className="text-sm text-muted-foreground">{trend.description}</p>
+                  {trend.metrics && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ♥ {trend.metrics.like_count} · 🔄 {trend.metrics.retweet_count}
+                    </p>
+                  )}
+                  <a 
+                    href={trend.url}
+                    target="_blank"
+                    rel="noopener noreferrer" 
+                    className="text-xs text-primary hover:underline mt-1 inline-block"
+                  >
+                    Learn more →
+                  </a>
                 </div>
               </div>
             ))

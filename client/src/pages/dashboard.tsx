@@ -56,6 +56,7 @@ export default function Dashboard() {
   // Initialize empty states
   const [profile, setProfile] = useState({
     name: "",
+    avatar: "",
     journey: "",
     progress: 0,
   });
@@ -73,7 +74,8 @@ export default function Dashboard() {
     if (dashboardData) {
       setProfile({
         name: dashboardData.username || "Career Explorer",
-        journey: "Getting Started",
+        avatar: dashboardData.avatar || "",
+        journey: dashboardData.journey || "Getting Started",
         progress: dashboardData.progress || 25,
       });
       

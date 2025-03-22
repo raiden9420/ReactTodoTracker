@@ -1,27 +1,27 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type WelcomeSectionProps = {
   username: string;
   progress: number;
+  avatar?: string;
 };
 
-export function WelcomeSection({ username, progress }: WelcomeSectionProps) {
+export function WelcomeSection({ username, progress, avatar }: WelcomeSectionProps) {
   return (
-    <Card className="overflow-hidden mb-6 bg-gradient-to-r from-primary/10 to-primary/5">
-      <CardContent className="p-6">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold tracking-tight">Welcome back{username ? `, ${username}` : ''}!</h2>
-            <p className="text-muted-foreground mt-1">
-              You've completed {progress}% of your career preparation journey. Your next opportunity awaits!
-            </p>
-          </div>
-          <Button size="sm" className="w-full sm:w-auto">
-            Continue Planning
-          </Button>
+    <div className="flex items-center gap-4 p-6 bg-card rounded-lg">
+      <Avatar className="h-16 w-16">
+        <AvatarImage src={avatar} alt={username} />
+        <AvatarFallback>
+          {username?.charAt(0)?.toUpperCase() || 'U'}
+        </AvatarFallback>
+      </Avatar>
+      <div className="space-y-1">
+        <h2 className="text-2xl font-semibold">Welcome back, {username}!</h2>
+        <div className="text-sm text-muted-foreground">
+          You've completed {progress}% of your career goals
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
