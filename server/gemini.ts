@@ -115,7 +115,7 @@ export async function getCourseRecommendation(profile: any) {
           duration: course.duration || "4 weeks",
           level: course.level || "Beginner",
           platform: course.platform || "EdX",
-          url: course.url || "https://careers.replit.com/learn"
+          url: course.url || "https://www.edx.org/learn/career-development"
         }
       };
     } catch (parseError) {
@@ -128,7 +128,7 @@ export async function getCourseRecommendation(profile: any) {
           duration: "6 weeks",
           level: "Beginner",
           platform: "LinkedIn Learning",
-          url: "https://careers.replit.com/learn"
+          url: "https://www.linkedin.com/learning"
         }
       };
     }
