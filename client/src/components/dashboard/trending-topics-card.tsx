@@ -13,6 +13,11 @@ type Trend = {
   description: string;
   url: string;
   type: 'article' | 'post';
+  metrics?: {
+    like_count: number;
+    retweet_count: number;
+    reply_count: number;
+  };
 };
 
 async function fetchTrends(subject: string) {

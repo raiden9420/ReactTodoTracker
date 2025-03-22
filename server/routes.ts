@@ -191,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         avatar: profile.avatar,
         progress: 25, // Sample progress percentage
         goals: formattedGoals,
-        trendingTopics: generateTrendingTopics(profile.subjects),
+        trendingTopics: await fetchTrends(profile.subjects[0] || "Career Development"), //Call the new function here
         activities: [
           {
             id: "1",
@@ -390,29 +390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const subject = decodeURIComponent(req.params.subject);
 
         // Generate trends based on subject
-        const trends = [
-          {
-            id: "trend1",
-            title: `Latest ${subject} Industry Developments`,
-            description: `Stay updated with the latest trends and developments in ${subject}`,
-            url: `https://www.bls.gov/ooh/occupation-finder.htm?pay=&education=&training=&newjobs=&growth=&submit=GO`,
-            type: "article",
-          },
-          {
-            id: "trend2",
-            title: `${subject} Career Opportunities`,
-            description: `Discover emerging career paths and opportunities in ${subject}`,
-            url: `https://www.onetonline.org/find/quick?s=${encodeURIComponent(subject)}`,
-            type: "article",
-          },
-          {
-            id: "trend3",
-            title: `${subject} Community Insights`,
-            description: `Connect with professionals and experts in ${subject}`,
-            url: `https://www.careeronestop.org/Toolkit/Careers/careers-${encodeURIComponent(subject.toLowerCase().replace(/\s+/g, '-'))}.aspx`,
-            type: "post",
-          },
-        ];
+        const trends = await fetchTrends(subject); //Use new function here
 
         return res.status(200).json({
           success: true,
@@ -637,8 +615,7 @@ async function validateRequest(req: any, res: any, next: any) {
   }
 }
 
-async function fetchCareerTrends(subject: string) {
-  // Return curated static trends as fallback
+async function fetchTrends(subject: string) {
   const trends = [
     {
       id: "trend1",
@@ -646,15 +623,38 @@ async function fetchCareerTrends(subject: string) {
       description: `Key skills and technologies that are shaping the ${subject} field this year. Learn what employers are looking for and how to stay competitive.`,
       url: "https://www.bls.gov/ooh/",
       type: "article",
-    },
-    {
-      id: "trend2",
-      title: `Career Growth in ${subject}`,
-      description: `Industry experts predict significant growth in ${subject} roles. Discover emerging opportunities and potential career paths.`,
-      url: "https://www.bls.gov/ooh/",
-      type: "article",
-    },
+    }
   ];
+
+  try {
+    // Fetch X posts
+    const query = encodeURIComponent(`${subject} jobs career trends -is:retweet -is:reply lang:en`);
+    const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=created_at,public_metrics&max_results=5`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.X_API_KEY}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch X posts');
+    }
+
+    const data = await response.json();
+    if (data.data && data.data.length > 0) {
+      // Add up to 2 X posts
+      const xPosts = data.data.slice(0, 2).map((post: any, index: number) => ({
+        id: `x-${index}`,
+        title: `Latest in ${subject}`,
+        description: post.text.length > 150 ? post.text.substring(0, 147) + '...' : post.text,
+        url: `https://twitter.com/i/web/status/${post.id}`,
+        type: 'post',
+        metrics: post.public_metrics
+      }));
+      trends.push(...xPosts);
+    }
+  } catch (error) {
+    console.error('Error fetching X posts:', error);
+  }
 
   return trends;
 }
