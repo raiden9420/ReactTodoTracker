@@ -19,20 +19,31 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
   const fetchRecommendations = async () => {
     try {
       setIsLoading(true);
+      const profileResponse = await fetch(`/api/user/${userId}`);
+      const profileData = await profileResponse.json();
+
+      if (!profileData.success || !profileData.user.hasProfile) {
+        toast({
+          title: "Profile Required",
+          description: "Please complete your profile survey to get video recommendations.",
+          variant: "default"
+        });
+        return;
+      }
+
       const response = await fetch(`/api/personalized-recommendations/${userId}`);
       const data = await response.json();
 
       if (data.success && data.data.video) {
         setVideo(data.data.video);
       } else {
-        console.error('Video data not found:', data);
         throw new Error(data.message || 'Failed to load video recommendation');
       }
     } catch (error) {
       console.error('Error fetching recommendations:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch video recommendations. Please try again later.",
+        description: "Please ensure your profile is complete and try again.",
         variant: "destructive"
       });
     } finally {
