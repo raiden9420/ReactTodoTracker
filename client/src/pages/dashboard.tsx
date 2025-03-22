@@ -9,7 +9,7 @@ import { RecentActivityCard } from "@/components/dashboard/recent-activity-card"
 import { Menu, Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [isCareerCoachOpen, setIsCareerCoachOpen] = useState(false); // Added state for Career Coach modal
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
 
   // Get userId from localStorage
   const userId = localStorage.getItem('userId') || '1'; // Default to 1 if not found
@@ -56,6 +57,7 @@ export default function Dashboard() {
         return null;
       }
     },
+    staleTime: 0, // Ensure fresh data on every fetch
   });
 
   // Initialize empty states
@@ -130,7 +132,10 @@ export default function Dashboard() {
       <Sidebar 
         isOpen={isSidebarOpen} 
         onOpenChange={setIsSidebarOpen}
-        onCareerCoachClick={toggleCareerCoach}
+        onCareerCoachClick={() => {
+          setIsSidebarOpen(false);
+          setIsCareerCoachOpen(true);
+        }}
         profile={profile}
       />
 
