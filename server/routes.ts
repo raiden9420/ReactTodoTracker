@@ -253,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Invalid user ID" 
         });
       }
-      
+
       // Get both user and profile
       const user = await storage.getUser(userId);
         if (!user) {
@@ -346,6 +346,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   );
+
+    // Trending topics endpoint
+    app.get("/api/career-trends/:subject", async (req: Request, res: Response) => {
+      try {
+        const subject = decodeURIComponent(req.params.subject);
+
+        // Generate trends based on subject
+        const trends = [
+          {
+            id: "trend1",
+            title: `Latest ${subject} Industry Developments`,
+            description: `Stay updated with the latest trends and developments in ${subject}`,
+            url: `https://www.linkedin.com/learning/search?keywords=${encodeURIComponent(subject)}`,
+            type: 'article'
+          },
+          {
+            id: "trend2",
+            title: `${subject} Career Opportunities`,
+            description: `Discover emerging career paths and opportunities in ${subject}`,
+            url: `https://www.linkedin.com/learning/search?keywords=${encodeURIComponent(subject)}%20careers`,
+            type: 'article'
+          },
+          {
+            id: "trend3",
+            title: `${subject} Community Insights`,
+            description: `Connect with professionals and experts in ${subject}`,
+            url: `https://www.linkedin.com/learning/search?keywords=${encodeURIComponent(subject)}%20networking`,
+            type: 'post'
+          }
+        ];
+
+        return res.status(200).json({
+          success: true,
+          data: trends
+        });
+      } catch (error) {
+        console.error("Error getting trends:", error);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to get trends" 
+        });
+      }
+    });
 
     // Goals API endpoints
 
@@ -573,7 +616,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: "article"
       }
     ];
-    
+
     return trends;
   }
 
@@ -597,3 +640,4 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     ];
   }
+}
