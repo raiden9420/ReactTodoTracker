@@ -52,40 +52,7 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
   };
 
   useEffect(() => {
-    const fetchRecommendationsIfProfileExists = async () => {
-      if (!userId) return;
-      
-      try {
-        setIsLoading(true);
-        const response = await fetch(`/api/personalized-recommendations/${userId}`);
-        const data = await response.json();
-
-        if (data.success) {
-          if (data.data.needsProfile) {
-            toast({
-              title: "Profile Required",
-              description: "Please complete your profile survey first to get personalized recommendations.",
-              variant: "default"
-            });
-            return;
-          }
-          if (data.data.video) {
-            setVideo(data.data.video);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching recommendations:', error);
-        toast({
-          title: "Error",
-          description: "Unable to load recommendations. Please try again later.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchRecommendationsIfProfileExists();
+    fetchRecommendations();
   }, [userId]);
 
   return (
