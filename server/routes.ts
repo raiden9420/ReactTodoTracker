@@ -235,11 +235,14 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
     // Get primary subject
     const primarySubject = profile.subjects[0] || "career development";
     
-    // Fetch video recommendation from YouTube
+    // Generate search query based on profile
     const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-    const searchQuery = encodeURIComponent(`${primarySubject} tutorial 2025`);
+    const interests = profile.interests.split(',')[0].trim(); // Get first interest
+    const searchQuery = encodeURIComponent(`${primarySubject} ${interests} career guide 2024`);
+    
+    // Fetch video recommendations from YouTube
     const youtubeResponse = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`
     );
     
     const youtubeData = await youtubeResponse.json();
