@@ -59,6 +59,48 @@ Response must be only the JSON array, no other text.`;
   }
 }
 
+export async function getCourseRecommendation(profile: any) {
+  if (!profile) {
+    return { success: false, message: "Profile data is required" };
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const prompt = `Given this user profile with subjects: ${profile.subjects.join(", ")}, interests: ${profile.interests}, and skills: ${profile.skills}, suggest a specific online course recommendation.
+    Format the response as a JSON object with properties:
+    - title: The course title
+    - description: A brief 1-2 sentence description
+    - duration: Estimated time to complete (e.g. "2 weeks")
+    - level: Difficulty level (Beginner/Intermediate/Advanced)
+
+    Example:
+    {
+      "title": "Introduction to Data Science",
+      "description": "Learn fundamental concepts of data analysis and statistics",
+      "duration": "4 weeks",
+      "level": "Beginner"
+    }`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    try {
+      const course = JSON.parse(text);
+      return { success: true, course };
+    } catch (parseError) {
+      console.error("Error parsing course recommendation:", parseError);
+      return { success: false, message: "Failed to parse course recommendation" };
+    }
+  } catch (error) {
+    console.error('Gemini API error:', error);
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : "Failed to generate course recommendation"
+    };
+  }
+}
+
 export async function getRecommendations(profile: any) {
   if (!profile) {
     return { success: false, message: "Profile data is required" };

@@ -210,6 +210,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Course recommendation endpoint
+  app.get("/api/course-recommendation/:userId", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId, 10);
+
+      if (isNaN(userId)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid user ID" 
+        });
+      }
+
+      const profile = await storage.getUserProfile(userId);
+      if (!profile) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User profile not found" 
+        });
+      }
+
+      const result = await getCourseRecommendation(profile);
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error("Error getting course recommendation:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Failed to get course recommendation" 
+      });
+    }
+  });
+
   // Personalized recommendations endpoint
   app.get("/api/personalized-recommendations/:userId", async (req: Request, res: Response) => {
     try {
