@@ -211,318 +211,320 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Personalized recommendations endpoint
-app.get("/api/personalized-recommendations/:userId", async (req: Request, res: Response) => {
-  try {
-    const userId = parseInt(req.params.userId, 10);
-
-    if (isNaN(userId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid user ID" 
-      });
-    }
-
+  app.get("/api/personalized-recommendations/:userId", async (req: Request, res: Response) => {
     try {
-      // Get both user and profile
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(200).json({
-          success: true,
-          data: {
-            video: null
-          }
+      const userId = parseInt(req.params.userId, 10);
+
+      if (isNaN(userId)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid user ID" 
         });
       }
 
-      const profile = await storage.getUserProfile(userId);
-      if (!profile || !profile.subjects || !profile.interests) {
-        return res.status(200).json({
-          success: true,
-          data: {
-            video: null
+      try {
+        // Get both user and profile
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(200).json({
+            success: true,
+            data: {
+              video: null
+            }
+          });
+        }
+
+        const profile = await storage.getUserProfile(userId);
+        if (!profile || !profile.subjects || !profile.interests) {
+          return res.status(200).json({
+            success: true,
+            data: {
+              video: null
+            }
+          });
+        }
+
+        // Get primary subject and ensure data exists
+        const primarySubject = profile.subjects[0] || "career development";
+        const interests = profile.interests?.split(',')[0]?.trim() || "professional development";
+
+        // Check for YouTube API key
+        const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+        if (!YOUTUBE_API_KEY) {
+          return res.status(500).json({
+            success: false,
+            message: "YouTube API key not configured"
+          });
+        }
+
+        // Generate search query based on profile
+        const searchQuery = encodeURIComponent(`${primarySubject} ${interests} career guide 2024`);
+
+        try {
+          // Fetch video recommendations from YouTube
+          const youtubeResponse = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`
+          );
+
+          const youtubeData = await youtubeResponse.json();
+
+          if (youtubeData.error) {
+            throw new Error(youtubeData.error.message || "YouTube API error");
           }
-        });
-      }
 
-    // Get primary subject and ensure data exists
-    const primarySubject = profile.subjects[0] || "career development";
-    const interests = profile.interests?.split(',')[0]?.trim() || "professional development";
+          const video = youtubeData.items?.[0];
+          if (!video) {
+            throw new Error("No video recommendations found");
+          }
 
-    // Check for YouTube API key
-    const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-    if (!YOUTUBE_API_KEY) {
-      return res.status(500).json({
-        success: false,
-        message: "YouTube API key not configured"
-      });
-    }
-
-    // Generate search query based on profile
-    const searchQuery = encodeURIComponent(`${primarySubject} ${interests} career guide 2024`);
-
-    try {
-      // Fetch video recommendations from YouTube
-      const youtubeResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`
-      );
-
-      const youtubeData = await youtubeResponse.json();
-
-      if (youtubeData.error) {
-        throw new Error(youtubeData.error.message || "YouTube API error");
-      }
-
-      const video = youtubeData.items?.[0];
-      if (!video) {
-        throw new Error("No video recommendations found");
-      }
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        video: {
-          title: video.snippet.title,
-          description: video.snippet.description,
-          url: `https://youtube.com/watch?v=${video.id.videoId}`
+          return res.status(200).json({
+            success: true,
+            data: {
+              video: {
+                title: video.snippet.title,
+                description: video.snippet.description,
+                url: `https://youtube.com/watch?v=${video.id.videoId}`
+              }
+            }
+          });
+        } catch (error) {
+          console.error("Error getting recommendations:", error);
+          const errorMessage = error instanceof Error ? error.message : "Failed to get recommendations";
+          return res.status(500).json({ 
+            success: false, 
+            message: errorMessage
+          });
         }
       }
     });
-  } catch (error) {
-    console.error("Error getting recommendations:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to get recommendations";
-    return res.status(500).json({ 
-      success: false, 
-      message: errorMessage
+
+    // Goals API endpoints
+
+    // GET AI-suggested goals (must be before the general /goals/:userId route to avoid conflict)
+    app.get("/api/goals/suggest/:userId", async (req: Request, res: Response) => {
+      try {
+        const userId = parseInt(req.params.userId, 10);
+
+        if (isNaN(userId)) {
+          return res.status(400).json({ 
+            success: false, 
+            message: "Invalid user ID" 
+          });
+        }
+
+        // Get the user profile to create personalized suggestions
+        const profile = await storage.getUserProfile(userId);
+
+        if (!profile) {
+          return res.status(404).json({ 
+            success: false, 
+            message: "User profile not found" 
+          });
+        }
+
+        // Generate new goal suggestion using Gemini AI
+        const suggestions = await suggestGoals(
+          profile.subjects,
+          profile.skills,
+          profile.interests,
+          1 // Number of suggestions to generate
+        );
+
+        // If suggestions could not be generated, return a helpful message
+        if (!suggestions || suggestions.length === 0) {
+          return res.status(500).json({
+            success: false,
+            message: "Could not generate goal suggestions at this time"
+          });
+        }
+
+        // Create only the AI-generated goals in the database
+        const createdGoals = await Promise.all(
+          suggestions.map(task => 
+            storage.createGoal({
+              task,
+              completed: false,
+              userId
+            })
+          )
+        );
+
+        return res.status(200).json({
+          success: true,
+          message: "Goal suggestions generated successfully",
+          data: createdGoals
+        });
+      } catch (error) {
+        console.error("Error generating goal suggestions:", error);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to generate goal suggestions" 
+        });
+      }
     });
-  }
-});
 
-// Goals API endpoints
+    // GET all goals for a user
+    app.get("/api/goals/:userId", async (req: Request, res: Response) => {
+      try {
+        const userId = parseInt(req.params.userId, 10);
 
-  // GET AI-suggested goals (must be before the general /goals/:userId route to avoid conflict)
-  app.get("/api/goals/suggest/:userId", async (req: Request, res: Response) => {
-    try {
-      const userId = parseInt(req.params.userId, 10);
+        if (isNaN(userId)) {
+          return res.status(400).json({ 
+            success: false, 
+            message: "Invalid user ID" 
+          });
+        }
 
-      if (isNaN(userId)) {
-        return res.status(400).json({ 
+        const goals = await storage.getGoals(userId);
+
+        return res.status(200).json({
+          success: true,
+          data: goals
+        });
+      } catch (error) {
+        console.error("Error getting goals:", error);
+        return res.status(500).json({ 
           success: false, 
-          message: "Invalid user ID" 
+          message: "Failed to get goals" 
         });
       }
-
-      // Get the user profile to create personalized suggestions
-      const profile = await storage.getUserProfile(userId);
-
-      if (!profile) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "User profile not found" 
-        });
-      }
-
-      // Generate new goal suggestion using Gemini AI
-      const suggestions = await suggestGoals(
-        profile.subjects,
-        profile.skills,
-        profile.interests,
-        1 // Number of suggestions to generate
-      );
-
-      // If suggestions could not be generated, return a helpful message
-      if (!suggestions || suggestions.length === 0) {
-        return res.status(500).json({
-          success: false,
-          message: "Could not generate goal suggestions at this time"
-        });
-      }
-
-      // Create only the AI-generated goals in the database
-      const createdGoals = await Promise.all(
-        suggestions.map(task => 
-          storage.createGoal({
-            task,
-            completed: false,
-            userId
-          })
-        )
-      );
-
-      return res.status(200).json({
-        success: true,
-        message: "Goal suggestions generated successfully",
-        data: createdGoals
-      });
-    } catch (error) {
-      console.error("Error generating goal suggestions:", error);
-      return res.status(500).json({ 
-        success: false, 
-        message: "Failed to generate goal suggestions" 
-      });
-    }
-  });
-
-  // GET all goals for a user
-  app.get("/api/goals/:userId", async (req: Request, res: Response) => {
-    try {
-      const userId = parseInt(req.params.userId, 10);
-
-      if (isNaN(userId)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Invalid user ID" 
-        });
-      }
-
-      const goals = await storage.getGoals(userId);
-
-      return res.status(200).json({
-        success: true,
-        data: goals
-      });
-    } catch (error) {
-      console.error("Error getting goals:", error);
-      return res.status(500).json({ 
-        success: false, 
-        message: "Failed to get goals" 
-      });
-    }
-  });
-
-  // POST create a new goal
-  app.post("/api/goals", async (req: Request, res: Response) => {
-    try {
-      // Validate request body
-      const validatedData = createGoalSchema.safeParse(req.body);
-
-      if (!validatedData.success) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Invalid goal data", 
-          errors: validatedData.error.flatten() 
-        });
-      }
-
-      // Create the goal
-      const newGoal = await storage.createGoal(validatedData.data);
-
-      return res.status(201).json({
-        success: true,
-        message: "Goal created successfully",
-        data: newGoal
-      });
-    } catch (error) {
-      console.error("Error creating goal:", error);
-      return res.status(500).json({ 
-        success: false, 
-        message: "Failed to create goal" 
-      });
-    }
-  });
-
-  // PUT update a goal
-  app.put("/api/goals/:id", async (req: Request, res: Response) => {
-    try {
-      const goalId = req.params.id;
-
-      // Validate request body
-      const validatedData = updateGoalSchema.safeParse(req.body);
-
-      if (!validatedData.success) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Invalid goal update data", 
-          errors: validatedData.error.flatten() 
-        });
-      }
-
-      // Update the goal
-      const updatedGoal = await storage.updateGoal(goalId, validatedData.data);
-
-      if (!updatedGoal) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "Goal not found" 
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Goal updated successfully",
-        data: updatedGoal
-      });
-    } catch (error) {
-      console.error("Error updating goal:", error);
-      return res.status(500).json({ 
-        success: false, 
-        message: "Failed to update goal" 
-      });
-    }
-  });
-
-  // DELETE a goal
-  app.delete("/api/goals/:id", async (req: Request, res: Response) => {
-    try {
-      const goalId = req.params.id;
-
-      // Delete the goal
-      const success = await storage.deleteGoal(goalId);
-
-      if (!success) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "Goal not found" 
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Goal deleted successfully"
-      });
-    } catch (error) {
-      console.error("Error deleting goal:", error);
-      return res.status(500).json({ 
-        success: false, 
-        message: "Failed to delete goal" 
-      });
-    }
-  });
-
-  const httpServer = createServer(app);
-  return httpServer;
-}
-
-// Helper function to generate trending topics based on user's subjects
-async function validateRequest(req: any, res: any, next: any) {
-  try {
-    await next();
-  } catch (error) {
-    console.error('Request validation error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: error instanceof Error ? error.message : "Unknown error occurred"
     });
+
+    // POST create a new goal
+    app.post("/api/goals", async (req: Request, res: Response) => {
+      try {
+        // Validate request body
+        const validatedData = createGoalSchema.safeParse(req.body);
+
+        if (!validatedData.success) {
+          return res.status(400).json({ 
+            success: false, 
+            message: "Invalid goal data", 
+            errors: validatedData.error.flatten() 
+          });
+        }
+
+        // Create the goal
+        const newGoal = await storage.createGoal(validatedData.data);
+
+        return res.status(201).json({
+          success: true,
+          message: "Goal created successfully",
+          data: newGoal
+        });
+      } catch (error) {
+        console.error("Error creating goal:", error);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to create goal" 
+        });
+      }
+    });
+
+    // PUT update a goal
+    app.put("/api/goals/:id", async (req: Request, res: Response) => {
+      try {
+        const goalId = req.params.id;
+
+        // Validate request body
+        const validatedData = updateGoalSchema.safeParse(req.body);
+
+        if (!validatedData.success) {
+          return res.status(400).json({ 
+            success: false, 
+            message: "Invalid goal update data", 
+            errors: validatedData.error.flatten() 
+          });
+        }
+
+        // Update the goal
+        const updatedGoal = await storage.updateGoal(goalId, validatedData.data);
+
+        if (!updatedGoal) {
+          return res.status(404).json({ 
+            success: false, 
+            message: "Goal not found" 
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: "Goal updated successfully",
+          data: updatedGoal
+        });
+      } catch (error) {
+        console.error("Error updating goal:", error);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to update goal" 
+        });
+      }
+    });
+
+    // DELETE a goal
+    app.delete("/api/goals/:id", async (req: Request, res: Response) => {
+      try {
+        const goalId = req.params.id;
+
+        // Delete the goal
+        const success = await storage.deleteGoal(goalId);
+
+        if (!success) {
+          return res.status(404).json({ 
+            success: false, 
+            message: "Goal not found" 
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: "Goal deleted successfully"
+        });
+      } catch (error) {
+        console.error("Error deleting goal:", error);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to delete goal" 
+        });
+      }
+    });
+
+    const httpServer = createServer(app);
+    return httpServer;
   }
-}
 
-function generateTrendingTopics(subjects: string[]) {
-  const baseTopics = [
-    { id: "1", name: "Career Planning", primary: true, percentage: 85 },
-    { id: "2", name: "Networking", percentage: 72 },
-    { id: "3", name: "Resume Building", percentage: 68 },
-    { id: "4", name: "Interview Skills", percentage: 65 }
-  ];
-
-  // Add subject-specific topics if available
-  if (subjects && subjects.length > 0) {
-    const subjectTopics = subjects.slice(0, 2).map((subject, index) => ({
-      id: `${5 + index}`,
-      name: `${subject} Careers`,
-      percentage: Math.floor(Math.random() * 15) + 55
-    }));
-
-    return [...baseTopics, ...subjectTopics];
+  // Helper function to generate trending topics based on user's subjects
+  async function validateRequest(req: any, res: any, next: any) {
+    try {
+      await next();
+    } catch (error) {
+      console.error('Request validation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error instanceof Error ? error.message : "Unknown error occurred"
+      });
+    }
   }
 
-  return baseTopics;
+  function generateTrendingTopics(subjects: string[]) {
+    const baseTopics = [
+      { id: "1", name: "Career Planning", primary: true, percentage: 85 },
+      { id: "2", name: "Networking", percentage: 72 },
+      { id: "3", name: "Resume Building", percentage: 68 },
+      { id: "4", name: "Interview Skills", percentage: 65 }
+    ];
+
+    // Add subject-specific topics if available
+    if (subjects && subjects.length > 0) {
+      const subjectTopics = subjects.slice(0, 2).map((subject, index) => ({
+        id: `${5 + index}`,
+        name: `${subject} Careers`,
+        percentage: Math.floor(Math.random() * 15) + 55
+      }));
+
+      return [...baseTopics, ...subjectTopics];
+    }
+
+    return baseTopics;
+  }
 }
