@@ -102,8 +102,9 @@ export async function getCourseRecommendation(profile: any) {
       const course = JSON.parse(jsonStr);
       
       // Add default Coursera URL if none provided
+      // Add specific Coursera URL for better reliability
       if (!course.url) {
-        course.url = `https://www.coursera.org/search?query=${encodeURIComponent(course.title)}`;
+        course.url = "https://www.coursera.org/courses";
       }
       
       return { success: true, course };

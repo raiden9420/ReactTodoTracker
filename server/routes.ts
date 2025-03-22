@@ -575,24 +575,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   async function fetchCareerTrends(subject: string) {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const prompt = `Generate 2 career trend items for ${subject} field - mix of 1 recent article and 1 recent X/Twitter post. Current date for reference: ${new Date().toISOString().split('T')[0]}
-
-Response format (JSON array):
-[{
-  id: "unique_string",
-  title: "catchy headline about career trend",
-  description: "2-3 sentences about the trend's impact on careers",
-  url: "https://example.com" (use real career websites like indeed.com/career-advice, bls.gov),
-  type: "article" or "post"
-}]
-
-Requirements:
-- Title should be attention-grabbing and specific to ${subject}
-- Focus on job market trends, skill demands, or industry changes
-- For "post" type, focus on insights from industry leaders
-- For "article" type, focus on career guidance or market analysis
-- URLs should point to major career/education sites`;
+    // Return curated static trends as fallback
+    const trends = [
+      {
+        id: "trend1",
+        title: `Top Skills in ${subject} for 2024`,
+        description: `Key skills and technologies that are shaping the ${subject} field this year. Learn what employers are looking for and how to stay competitive.`,
+        url: "https://www.bls.gov/ooh/",
+        type: "article"
+      },
+      {
+        id: "trend2",
+        title: `Career Growth in ${subject}`,
+        description: `Industry experts predict significant growth in ${subject} roles. Discover emerging opportunities and potential career paths.`,
+        url: "https://www.bls.gov/ooh/",
+        type: "article"
+      }
+    ];
+    
+    return trends;
 
     try {
       const result = await model.generateContent(prompt);
