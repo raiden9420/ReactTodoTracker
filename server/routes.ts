@@ -666,7 +666,7 @@ async function fetchTrends(subject: string) {
       return trends;
     }
 
-    // Filter and sort tweets by engagement
+    // Filter and sort tweets by engagement, get only the top one
     const relevantTweets = data.data
       .filter(tweet => 
         tweet.text.toLowerCase().includes(subject.toLowerCase()) &&
@@ -678,7 +678,7 @@ async function fetchTrends(subject: string) {
         const bEngagement = (b.public_metrics?.like_count || 0) + (b.public_metrics?.retweet_count || 0);
         return bEngagement - aEngagement;
       })
-      .slice(0, 2);
+      .slice(0, 1);
 
     const xPosts = relevantTweets.map((tweet, index) => ({
       id: `x-${index}`,
