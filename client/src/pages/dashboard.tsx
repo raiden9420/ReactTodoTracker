@@ -72,7 +72,7 @@ export default function Dashboard() {
   // Initialize empty states
   const [profile, setProfile] = useState({
     name: "Career Explorer",
-    avatar: "",
+    avatar: data?.user?.avatar || "",
     journey: "Getting Started",
     progress: 25
   });
