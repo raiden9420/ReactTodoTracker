@@ -21,11 +21,11 @@ interface Profile {
 type SidebarProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onCareerCoachClick: () => void;
   profile: Profile;
+  onCareerCoachClick: () => void;
 };
 
-export function Sidebar({ isOpen, onOpenChange, profile }: SidebarProps) {
+export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: SidebarProps) {
   const [recentItems] = useState([
     { id: 1, name: "Career Assessments", href: "#assessments" },
     { id: 2, name: "Industry Insights", href: "#insights" },
@@ -53,7 +53,7 @@ export function Sidebar({ isOpen, onOpenChange, profile }: SidebarProps) {
             <AvatarImage src={profile.avatar || "/default-avatar.png"} alt="User avatar" />
             <AvatarFallback>{profile.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
           </Avatar>
-          
+
           <div className="flex flex-col min-w-0">
             <span className="font-semibold text-sm truncate">{profile.name}</span>
             <span className="text-xs text-sidebar-foreground/60 truncate">{profile.journey}</span>
@@ -79,7 +79,7 @@ export function Sidebar({ isOpen, onOpenChange, profile }: SidebarProps) {
           <div className="px-2 mb-2">
             <h3 className="text-sm font-semibold mb-1">Quick Actions</h3>
           </div>
-          
+
           {navItems.map((item) => (
             <Link 
               key={item.label} 
@@ -103,7 +103,7 @@ export function Sidebar({ isOpen, onOpenChange, profile }: SidebarProps) {
             </Link>
           ))}
         </nav>
-        
+
         {/* Recently Viewed */}
         <div className="mt-8 px-2">
           <h3 className="text-sm font-semibold mb-2">Recently Viewed</h3>
@@ -119,7 +119,7 @@ export function Sidebar({ isOpen, onOpenChange, profile }: SidebarProps) {
             ))}
           </div>
         </div>
-        
+
         <div className="mt-auto pt-6">
           <ThemeToggle />
         </div>

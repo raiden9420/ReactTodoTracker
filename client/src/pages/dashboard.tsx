@@ -123,7 +123,7 @@ export default function Dashboard() {
         isOpen={isSidebarOpen} 
         onOpenChange={setIsSidebarOpen}
         onCareerCoachClick={toggleCareerCoach}
-        profile={profile} // Pass profile prop to Sidebar
+        profile={profile}
       />
 
       <main className="flex-1 min-w-0">
