@@ -180,7 +180,7 @@ export default function Dashboard() {
             <RecentActivityCard activities={activities} />
           </div>
           {isCareerCoachOpen && (
-            <div className="fixed inset-0 z-50">
+            <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"> {/* Added overlay */}
               <CareerCoach isOpen={isCareerCoachOpen} onClose={() => setIsCareerCoachOpen(false)} />
             </div>
           )}

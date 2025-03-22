@@ -22,7 +22,7 @@ type SidebarProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   profile: Profile;
-  onCareerCoachClick: () => void;
+  onCareerCoachClick?: () => void;
 };
 
 export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: SidebarProps) {
