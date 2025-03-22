@@ -76,21 +76,26 @@ export async function getCourseRecommendation(profile: any) {
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const prompt = `Given this user profile with subjects: ${profile.subjects.join(", ")}, interests: ${profile.interests}, and skills: ${profile.skills}, suggest a specific online course recommendation from any major learning platform (edX, Udemy, LinkedIn Learning, etc.).
-    Format the response as a JSON object with properties:
-    - title: The course title
-    - description: A brief 1-2 sentence description
-    - duration: Estimated time to complete (e.g. "2 weeks")
-    - level: Difficulty level (Beginner/Intermediate/Advanced)
-    - platform: The learning platform name
-    - url: A URL to the course
+    const prompt = `Based on this user profile with subjects: ${profile.subjects.join(", ")}, interests: ${profile.interests}, and skills: ${profile.skills}, recommend a real, currently available online course from a major learning platform.
 
-    Example:
+    Important: Please provide ONLY real, existing courses with their actual URLs from platforms like Coursera, Udemy, or edX. DO NOT generate fake URLs.
+
+    Format the response as a JSON object with properties:
+    - title: The exact course title as shown on the platform
+    - description: The actual course description
+    - duration: Real course duration
+    - level: Actual course difficulty level
+    - platform: The platform name (Coursera/Udemy/edX)
+    - url: The complete, real URL to the course page
+
+    Example format:
     {
-      "title": "Introduction to Data Science",
-      "description": "Learn fundamental concepts of data analysis and statistics",
-      "duration": "4 weeks",
-      "level": "Beginner"
+      "title": "Python for Everybody Specialization",
+      "description": "Learn to Program and Analyze Data with Python",
+      "duration": "8 months",
+      "level": "Beginner",
+      "platform": "Coursera",
+      "url": "https://www.coursera.org/specializations/python"
     }`;
 
     const result = await model.generateContent(prompt);
