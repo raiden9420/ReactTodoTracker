@@ -221,8 +221,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Invalid user ID" 
         });
       }
-        // Get both user and profile
-        const user = await storage.getUser(userId);
+      
+      // Get both user and profile
+      const user = await storage.getUser(userId);
         if (!user) {
           return res.status(200).json({
             success: true,
