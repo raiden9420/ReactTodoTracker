@@ -639,8 +639,8 @@ async function fetchTrends(subject: string) {
   }
 
   try {
-    const query = encodeURIComponent(`${subject} jobs career trends -is:retweet -is:reply lang:en`);
-    const response = await fetch(`https://api.twitter.com/1.1/search/tweets.json?q=${query}&result_type=mixed&count=5`, {
+    const query = encodeURIComponent(`${subject} career 2025 OR ${subject} trends -is:retweet -is:reply lang:en has:media`);
+    const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=public_metrics,created_at&max_results=10&sort_order=relevancy`, {
       headers: {
         'Authorization': `Bearer ${process.env.X_API_KEY}`,
         'Content-Type': 'application/json'
@@ -654,22 +654,28 @@ async function fetchTrends(subject: string) {
     }
 
     const data = await response.json();
-    if (!data.statuses || !Array.isArray(data.statuses)) {
+    if (!data.data || !Array.isArray(data.data)) {
       console.warn('Invalid response format from X API');
       return trends;
     }
 
-    const xPosts = data.statuses
-      .slice(0, 2)
-      .filter(post => post.text && post.id_str)
-      .map((post, index) => ({
-        id: `x-${index}`,
-        title: `Latest in ${subject}`,
-        description: post.text.length > 150 ? post.text.substring(0, 147) + '...' : post.text,
-        url: `https://twitter.com/i/web/status/${post.id_str}`,
-        type: 'post',
-        metrics: post.public_metrics || {}
-      }));
+    // Sort by engagement (likes + retweets)
+    const sortedTweets = data.data
+      .sort((a, b) => {
+        const aEngagement = (a.public_metrics?.like_count || 0) + (a.public_metrics?.retweet_count || 0);
+        const bEngagement = (b.public_metrics?.like_count || 0) + (b.public_metrics?.retweet_count || 0);
+        return bEngagement - aEngagement;
+      })
+      .slice(0, 2);
+
+    const xPosts = sortedTweets.map((tweet, index) => ({
+      id: `x-${index}`,
+      title: `Trending in ${subject}`,
+      description: tweet.text.length > 150 ? tweet.text.substring(0, 147) + '...' : tweet.text,
+      url: `https://twitter.com/i/web/status/${tweet.id}`,
+      type: 'post',
+      metrics: tweet.public_metrics
+    }));
 
     return [...trends, ...xPosts];
   } catch (error) {
