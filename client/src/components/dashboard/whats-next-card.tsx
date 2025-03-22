@@ -41,6 +41,16 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
       // Fetch course recommendation
       const courseResponse = await fetch(`/api/course-recommendation/${userId}`);
       const courseData = await courseResponse.json();
+      
+      if (courseData.success && courseData.course) {
+        setCourse(courseData.course);
+      } else {
+        toast({
+          title: "Course Recommendation",
+          description: "Unable to load course recommendation. Please try again.",
+          variant: "default"
+        });
+      }
 
       if (courseData.success && courseData.course) {
         setCourse(courseData.course);

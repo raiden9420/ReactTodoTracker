@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { surveySchema, goalSchema, createGoalSchema, updateGoalSchema } from "@shared/schema";
 import { z } from "zod";
-import { suggestGoals } from "./gemini";
+import { suggestGoals, getCourseRecommendation } from "./gemini";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here
