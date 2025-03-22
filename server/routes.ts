@@ -639,13 +639,18 @@ async function fetchTrends(subject: string) {
   }
 
   try {
-    const query = encodeURIComponent(`${subject} career 2025 OR ${subject} trends -is:retweet -is:reply lang:en has:media`);
-    const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=public_metrics,created_at&max_results=10&sort_order=relevancy`, {
+    const query = encodeURIComponent(`${subject} career OR ${subject} job -is:retweet -is:reply lang:en`);
+    const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=public_metrics,created_at&max_results=5`, {
       headers: {
         'Authorization': `Bearer ${process.env.X_API_KEY}`,
         'Content-Type': 'application/json'
       }
     });
+
+    if (!response.ok) {
+      console.error('X API Error:', response.status, await response.text());
+      return trends;
+    }
 
     if (!response.ok) {
       const errorData = await response.json();
