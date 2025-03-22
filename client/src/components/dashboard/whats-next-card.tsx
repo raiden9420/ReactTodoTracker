@@ -52,31 +52,32 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
   };
 
   useEffect(() => {
-    const checkProfileAndFetch = async () => {
+    const fetchRecommendationsIfProfileExists = async () => {
       if (!userId) return;
       
       try {
         setIsLoading(true);
-        const profileResponse = await fetch(`/api/user/${userId}`);
-        if (!profileResponse.ok) {
-          throw new Error('Failed to fetch user profile');
-        }
-        const profileData = await profileResponse.json();
-        
-        if (profileData.success && profileData.user?.hasProfile) {
-          await fetchRecommendations();
-        } else {
-          toast({
-            title: "Profile Required",
-            description: "Please complete your profile survey first to get personalized recommendations.",
-            variant: "default"
-          });
+        const response = await fetch(`/api/personalized-recommendations/${userId}`);
+        const data = await response.json();
+
+        if (data.success) {
+          if (data.data.needsProfile) {
+            toast({
+              title: "Profile Required",
+              description: "Please complete your profile survey first to get personalized recommendations.",
+              variant: "default"
+            });
+            return;
+          }
+          if (data.data.video) {
+            setVideo(data.data.video);
+          }
         }
       } catch (error) {
-        console.error('Error checking user profile:', error);
+        console.error('Error fetching recommendations:', error);
         toast({
           title: "Error",
-          description: "Failed to check profile status. Please try again.",
+          description: "Unable to load recommendations. Please try again later.",
           variant: "destructive"
         });
       } finally {
@@ -84,7 +85,7 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
       }
     };
     
-    checkProfileAndFetch();
+    fetchRecommendationsIfProfileExists();
   }, [userId]);
 
   return (
