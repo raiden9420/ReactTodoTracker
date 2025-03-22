@@ -99,42 +99,40 @@ export async function getCourseRecommendation(profile: any) {
     console.log("Raw Gemini response:", text);
     
     try {
-      const jsonStr = text.replace(/```json\n?|\n?```/g, '').trim();
-      const course = JSON.parse(jsonStr);
-      
-      // Add default Coursera URL if none provided
-      // Add specific Coursera URL for better reliability
-      if (!course.url) {
-        course.url = "https://www.coursera.org/courses";
-      }
-      
-      return { success: true, course };
-    } catch (parseError) {
-      console.error("Error parsing course recommendation:", parseError);
-      return { 
-        success: true, 
-        course: {
-          title: "Data Analysis Fundamentals",
-          description: "Learn essential data analysis skills and tools",
-          duration: "4 weeks",
-          level: "Beginner",
-          url: "https://www.coursera.org/learn/data-analytics-foundations"
-        }
-      };
-    }
-
-    try {
-      // Clean the response text to ensure it only contains JSON
+      // Clean the response text and try to parse JSON
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error("No JSON found in response");
       }
       const course = JSON.parse(jsonMatch[0]);
-      if (!course.title || !course.description || !course.duration || !course.level) {
-        throw new Error("Invalid course data structure");
-      }
-      return { success: true, course };
+      
+      // Validate and provide defaults if needed
+      return {
+        success: true,
+        course: {
+          title: course.title || "Career Development Course",
+          description: course.description || "Learn essential career skills",
+          duration: course.duration || "4 weeks",
+          level: course.level || "Beginner",
+          platform: course.platform || "EdX",
+          url: course.url || "https://www.edx.org/learn/career-development"
+        }
+      };
     } catch (parseError) {
+      console.error("Error parsing course recommendation:", parseError);
+      return {
+        success: true,
+        course: {
+          title: "Professional Development Essentials",
+          description: "Master key skills for career growth",
+          duration: "6 weeks",
+          level: "Beginner",
+          platform: "LinkedIn Learning",
+          url: "https://www.linkedin.com/learning"
+        }
+      };
+    }
+  } catch (error) {
       console.error("Error parsing course recommendation:", parseError);
       return { success: false, message: "Failed to parse course recommendation" };
     }

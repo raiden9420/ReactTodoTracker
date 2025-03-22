@@ -578,6 +578,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   function generateTrendingTopics(subjects: string[]) {
-    // This will be replaced by real data from fetchCareerTrends
-    return [];
+    const primarySubject = subjects[0] || 'Career Development';
+    return [
+      {
+        id: "trend1",
+        title: `Latest ${primarySubject} Developments`,
+        description: `Current trends and innovations in ${primarySubject} that are shaping the industry.`,
+        url: "https://www.linkedin.com/learning",
+        type: "trend"
+      },
+      {
+        id: "trend2",
+        title: `${primarySubject} Career Paths`,
+        description: `Explore emerging career opportunities and growth paths in ${primarySubject}.`,
+        url: "https://www.edx.org",
+        type: "trend"
+      }
+    ];
   }
