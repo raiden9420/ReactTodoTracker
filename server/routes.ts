@@ -578,7 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Career coach endpoint
   app.post("/api/career-coach", async (req: Request, res: Response) => {
     try {
-      const { message } = req.body;
+      const { message, userData } = req.body;
       if (!message) {
         return res.status(400).json({
           success: false,
@@ -587,9 +587,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-      const prompt = `As a career coach, respond to this question: ${message}. Keep the response concise and actionable.`;
       
-      const result = await model.generateContent(prompt);
+      // Create a context-aware prompt using user data
+      const contextPrompt = `As a career coach, consider this user's profile:
+Subjects: ${userData?.subjects?.join(', ') || 'Not specified'}
+Interests: ${userData?.interests?.join(', ') || 'Not specified'}
+Skills: ${userData?.skills?.join(', ') || 'Not specified'}
+Career Goal: ${userData?.goal || 'Not specified'}
+Thinking Style: ${userData?.thinkingStyle || 'Not specified'}
+
+Based on this profile, respond to their question: ${message}
+
+Provide personalized, actionable advice that aligns with their interests and goals. Keep the response concise and practical.`;
+      
+      const result = await model.generateContent(contextPrompt);
       const response = await result.response;
       
       return res.status(200).json({

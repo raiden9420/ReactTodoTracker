@@ -1,76 +1,185 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArrowLeft, Send } from "lucide-react";
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
+type Message = {
+  id: number;
+  message: string;
+  sender: 'user' | 'bot';
+  timestamp: string;
+};
+
+type UserData = {
+  id: number;
+  username: string;
+  subjects: string[] | null;
+  interests: string[] | null;
+  skills: string[] | null;
+  goal: string | null;
+  thinkingStyle: string | null;
+  extraInfo: string | null;
+};
+
+interface CareerCoachProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function CareerCoach({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hi! I\'m your AI career coach. How can I help you today?' }
-  ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+export default function CareerCoach({ isOpen, onClose }: CareerCoachProps) {
+  const [userInput, setUserInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
-    
-    const userMessage = { role: 'user' as const, content: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
+  // Fetch user data
+  const { data: userData } = useQuery<UserData>({
+    queryKey: ['/api/user/1'], // Using default user ID 1
+  });
 
-    try {
+  // Send message mutation
+  const { mutate: sendMessage, isPending: isSending } = useMutation({
+    mutationFn: async (message: string) => {
       const response = await fetch('/api/career-coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({ 
+          message,
+          userData // Include user data for context
+        })
       });
-      
-      const data = await response.json();
+      return response.json();
+    },
+    onSuccess: (data) => {
       if (data.success) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            id: Date.now(),
+            message: data.response,
+            sender: 'bot',
+            timestamp: new Date().toISOString()
+          }
+        ]);
+        scrollToBottom();
       }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setIsLoading(false);
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to get a response. Please try again."
+      });
     }
+  });
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      setMessages([{
+        id: 0,
+        message: "Hi! I'm your AI career coach. I can help you explore career paths, develop skills, and achieve your professional goals. How can I assist you today?",
+        sender: 'bot',
+        timestamp: new Date().toISOString()
+      }]);
+    }
+  }, [isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userInput.trim() || isSending) return;
+
+    const userMessage = {
+      id: Date.now(),
+      message: userInput,
+      sender: 'user' as const,
+      timestamp: new Date().toISOString()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setUserInput('');
+    scrollToBottom();
+    sendMessage(userInput);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-[350px] bg-background border-l p-4 shadow-lg z-50">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Career Coach</h2>
-        <Button variant="ghost" size="icon" onClick={onClose}>×</Button>
-      </div>
-      
-      <ScrollArea className="h-[calc(100vh-140px)] pr-4">
-        {messages.map((msg, i) => (
-          <Card key={i} className={`mb-2 p-3 ${msg.role === 'assistant' ? 'bg-muted' : 'bg-primary/10'}`}>
-            {msg.content}
-          </Card>
-        ))}
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <header className="bg-card shadow-sm py-4 px-4 flex items-center border-b border-border">
+        <button 
+          className="text-muted-foreground hover:text-foreground mr-4 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
+          onClick={onClose}
+          aria-label="Back"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-xl font-semibold text-foreground">Career Coach</h1>
+      </header>
+
+      <ScrollArea className="flex-1 p-4">
+        <div ref={chatContainerRef} className="space-y-4">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${message.sender === 'bot' ? 'items-start space-x-3' : 'flex-row-reverse items-start'} max-w-3xl ${message.sender === 'user' ? 'ml-auto' : ''}`}
+            >
+              <div className={`flex-shrink-0 h-10 w-10 rounded-full ${message.sender === 'bot' ? 'bg-primary/20' : 'bg-green-500/20'} flex items-center justify-center`}>
+                <span className={message.sender === 'bot' ? 'text-primary font-semibold' : 'text-green-500 font-semibold'}>
+                  {message.sender === 'bot' ? 'E' : 'U'}
+                </span>
+              </div>
+              <div className={`${message.sender === 'bot' ? 'bg-card border border-border' : 'bg-muted'} p-4 rounded-lg shadow-sm max-w-sm sm:max-w-md md:max-w-lg ${message.sender === 'user' ? 'mr-3' : ''}`}>
+                <p className="text-foreground whitespace-pre-line">{message.message}</p>
+              </div>
+            </div>
+          ))}
+          
+          {isSending && (
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <span className="text-primary font-semibold">E</span>
+              </div>
+              <Card className="p-3">
+                <div className="flex space-x-1">
+                  <div className="bg-primary/30 w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                  <div className="bg-primary/30 w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                  <div className="bg-primary/30 w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                </div>
+              </Card>
+            </div>
+          )}
+        </div>
       </ScrollArea>
 
-      <div className="absolute bottom-4 left-4 right-4 flex gap-2">
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Ask your career question..."
-          disabled={isLoading}
-        />
-        <Button onClick={sendMessage} disabled={isLoading}>
-          Send
-        </Button>
+      <div className="p-4 bg-card border-t border-border">
+        <form className="flex items-center space-x-2" onSubmit={handleSubmit}>
+          <Input 
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            placeholder="Type your question..."
+            disabled={isSending}
+            className="flex-1"
+          />
+          <Button 
+            type="submit" 
+            disabled={!userInput.trim() || isSending}
+            size="icon"
+          >
+            <Send className="h-5 w-5" />
+          </Button>
+        </form>
       </div>
     </div>
   );
