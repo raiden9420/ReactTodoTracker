@@ -575,6 +575,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Career coach endpoint
+  app.post("/api/career-coach", async (req: Request, res: Response) => {
+    try {
+      const { message } = req.body;
+      if (!message) {
+        return res.status(400).json({
+          success: false,
+          message: "Message is required"
+        });
+      }
+
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const prompt = `As a career coach, respond to this question: ${message}. Keep the response concise and actionable.`;
+      
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      
+      return res.status(200).json({
+        success: true,
+        response: response.text()
+      });
+    } catch (error) {
+      console.error('Career coach error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to process request"
+      });
+    }
+  });
+
   app.delete("/api/goals/:id", async (req: Request, res: Response) => {
     try {
       const goalId = req.params.id;

@@ -13,14 +13,30 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Dummy CareerCoach component -  Replace with actual implementation
+const CareerCoach = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+        <h2 className="text-xl font-bold mb-4">Career Coach</h2>
+        <p>This is a placeholder for the career counseling chatbot.</p>
+        <Button onClick={onClose}>Close</Button>
+      </div>
+    </div>
+  );
+};
+
+
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isCareerCoachOpen, setIsCareerCoachOpen] = useState(false); // Added state for Career Coach modal
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  
+
   // Get userId from localStorage
   const userId = localStorage.getItem('userId') || '1'; // Default to 1 if not found
-  
+
   // Fetch dashboard data from API
   const { data: dashboardData, isLoading, error } = useQuery({
     queryKey: [`/api/dashboard/${userId}`],
@@ -60,7 +76,7 @@ export default function Dashboard() {
     journey: "",
     progress: 0,
   });
-  
+
   const [goals, setGoals] = useState([]);
   const [whatNext, setWhatNext] = useState({
     course: { title: "" },
@@ -68,7 +84,7 @@ export default function Dashboard() {
   });
   const [trends, setTrends] = useState([]);
   const [activities, setActivities] = useState([]);
-  
+
   // Update dashboard data when received from API
   useEffect(() => {
     if (dashboardData) {
@@ -78,19 +94,19 @@ export default function Dashboard() {
         journey: dashboardData.journey || "Getting Started",
         progress: dashboardData.progress || 25,
       });
-      
+
       if (dashboardData.goals) {
         setGoals(dashboardData.goals);
       }
-      
+
       if (dashboardData.nextSteps) {
         setWhatNext(dashboardData.nextSteps);
       }
-      
+
       if (dashboardData.trendingTopics) {
         setTrends(dashboardData.trendingTopics);
       }
-      
+
       if (dashboardData.activities) {
         setActivities(dashboardData.activities);
       }
@@ -117,17 +133,17 @@ export default function Dashboard() {
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
           </Button>
-          
+
           <div className="flex-1">
             <h1 className="text-lg font-semibold">Emerge Career Dashboard</h1>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
               <span className="sr-only">Notifications</span>
             </Button>
-            
+
             <Button variant="ghost" size="icon">
               <Search className="h-5 w-5" />
               <span className="sr-only">Search</span>
@@ -150,6 +166,14 @@ export default function Dashboard() {
             <TrendingTopicsCard userId={userId} />
             <RecentActivityCard activities={activities} />
           </div>
+          <Button
+            variant="outline"
+            className="fixed right-4 bottom-4 z-50"
+            onClick={() => setIsCareerCoachOpen(true)}
+          >
+            Career Coach
+          </Button>
+          <CareerCoach isOpen={isCareerCoachOpen} onClose={() => setIsCareerCoachOpen(false)} />
         </div>
       </main>
     </div>
