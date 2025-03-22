@@ -28,12 +28,18 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
   const { data: trends = [], isLoading, refetch, error } = useQuery({
     queryKey: ['career-trends', userId],
     queryFn: async () => {
-      const userResponse = await fetch(`/api/user/${userId}`);
-      if (!userResponse.ok) throw new Error('Failed to fetch user data');
-      const userData = await userResponse.json();
-      if (!userData.success) throw new Error('Failed to fetch user data');
-      const subject = userData.user?.subjects?.[0] || 'Career Development';
-      return fetchTrends(subject);
+      try {
+        const userResponse = await fetch(`/api/user/${userId}`);
+        if (!userResponse.ok) throw new Error('Failed to fetch user data');
+        const userData = await userResponse.json();
+        if (!userData.success) throw new Error('Failed to fetch user data');
+        const subject = userData.user?.subjects?.[0] || 'Career Development';
+        const trends = await fetchTrends(subject);
+        return Array.isArray(trends) ? trends : [];
+      } catch (error) {
+        console.error('Error fetching trends:', error);
+        return [];
+      }
     },
     enabled: !!userId,
     refetchInterval: 1000 * 60 * 30, // Refresh every 30 minutes
