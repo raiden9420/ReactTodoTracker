@@ -543,24 +543,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  async function fetchCareerTrends(subject: string) {
+    // This would typically use real API calls to news sources and Twitter
+    // For demo, returning structured mock data
+    return {
+      articles: [
+        {
+          id: "1",
+          title: `Latest Trends in ${subject}`,
+          description: `Emerging career opportunities and growth areas in ${subject} field for 2024`,
+          url: `https://www.bls.gov/ooh/life-physical-and-social-science/${subject.toLowerCase()}.htm`,
+          type: "article"
+        }
+      ],
+      posts: [
+        {
+          id: "2",
+          title: `#${subject}Careers Trending`,
+          description: `Industry professionals discussing latest ${subject} career opportunities and market demands`,
+          url: `https://twitter.com/search?q=${encodeURIComponent(`${subject} careers`)}`,
+          type: "post"
+        }
+      ]
+    };
+  }
+
   function generateTrendingTopics(subjects: string[]) {
-    const baseTopics = [
-      { id: "1", name: "Career Planning", primary: true, percentage: 85 },
-      { id: "2", name: "Networking", percentage: 72 },
-      { id: "3", name: "Resume Building", percentage: 68 },
-      { id: "4", name: "Interview Skills", percentage: 65 }
-    ];
-
-    // Add subject-specific topics if available
-    if (subjects && subjects.length > 0) {
-      const subjectTopics = subjects.slice(0, 2).map((subject, index) => ({
-        id: `${5 + index}`,
-        name: `${subject} Careers`,
-        percentage: Math.floor(Math.random() * 15) + 55
-      }));
-
-      return [...baseTopics, ...subjectTopics];
-    }
-
-    return baseTopics;
+    // This will be replaced by real data from fetchCareerTrends
+    return [];
   }
