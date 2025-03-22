@@ -123,14 +123,20 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
         throw new Error(response.message || 'Failed to refresh goals');
       }
 
-      // Force refetch dashboard data to get new goals
-      await queryClient.fetchQuery({ 
-        queryKey: [`/api/dashboard/${userId}`],
-        staleTime: 0
-      });
-
-      // Invalidate other related queries
-      queryClient.invalidateQueries({ queryKey: [`/api/personalized-recommendations/${userId}`] });
+      // Wait for the dashboard data to refresh
+      const dashboardResponse = await apiRequest(`/api/dashboard/${userId}`);
+      if (dashboardResponse.success && dashboardResponse.data) {
+        // Update goals directly from dashboard response
+        const updatedGoals = dashboardResponse.data.goals.map((goal: any) => ({
+          id: goal.id,
+          title: goal.title || goal.task,
+          completed: goal.completed,
+          progress: goal.progress || 0
+        }));
+        
+        // Force update of goals in cache
+        queryClient.setQueryData([`/api/dashboard/${userId}`], dashboardResponse);
+      }
 
       toast({
         title: "Goals refreshed",
