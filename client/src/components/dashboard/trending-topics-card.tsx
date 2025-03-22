@@ -19,11 +19,12 @@ type Trend = {
 async function fetchTrends(subject: string) {
   const response = await fetch(`/api/career-trends/${encodeURIComponent(subject)}`);
   if (!response.ok) throw new Error('Failed to fetch trends');
-  return response.json();
+  const data = await response.json();
+  return data.data;
 }
 
 export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
-  const { data, isLoading, refetch } = useQuery({
+  const { data: trends = [], isLoading, refetch } = useQuery({
     queryKey: ['career-trends', userId],
     queryFn: async () => {
       const userResponse = await fetch(`/api/user/${userId}`);
@@ -34,8 +35,6 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
     enabled: !!userId,
     refetchInterval: 1000 * 60 * 30, // Refresh every 30 minutes
   });
-
-  const trends = data?.data || [];
   
   return (
     <Card>
