@@ -552,7 +552,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/activities", async (req: Request, res: Response) => {
     try {
       const { userId, type, title } = req.body;
-      
+
       if (!userId || !type || !title) {
         return res.status(400).json({
           success: false,
@@ -653,14 +653,18 @@ async function fetchTrends(subject: string) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('X API Error:', response.status, errorText);
+      // For rate limits (429) or other errors, silently fall back to default trends
+      if (response.status === 429) {
+        console.log('X API rate limited, using default trends');
+      } else {
+        console.error('X API Error:', response.status, await response.text());
+      }
       return trends;
     }
 
     const data = await response.json();
     console.log('X API Response:', JSON.stringify(data, null, 2));
-    
+
     if (!data.data || !Array.isArray(data.data)) {
       console.warn('Invalid response format from X API');
       return trends;
