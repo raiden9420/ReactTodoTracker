@@ -13,19 +13,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Dummy CareerCoach component -  Replace with actual implementation
-const CareerCoach = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Career Coach</h2>
-        <p>This is a placeholder for the career counseling chatbot.</p>
-        <Button onClick={onClose}>Close</Button>
-      </div>
-    </div>
-  );
-};
+// Import CareerCoach component
+import CareerCoach from "@/components/dashboard/career-coach";
 
 
 export default function Dashboard() {
@@ -171,7 +160,11 @@ export default function Dashboard() {
             <TrendingTopicsCard userId={userId} />
             <RecentActivityCard activities={activities} />
           </div>
-          {isCareerCoachOpen && <CareerCoach isOpen={isCareerCoachOpen} onClose={() => setIsCareerCoachOpen(false)} />}
+          {isCareerCoachOpen && (
+            <div className="fixed inset-0 z-50">
+              <CareerCoach isOpen={isCareerCoachOpen} onClose={() => setIsCareerCoachOpen(false)} />
+            </div>
+          )}
         </div>
       </main>
     </div>
