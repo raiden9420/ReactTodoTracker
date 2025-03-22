@@ -639,8 +639,8 @@ async function fetchTrends(subject: string) {
   }
 
   try {
-    const query = encodeURIComponent(`${subject} career OR ${subject} job -is:retweet -is:reply lang:en`);
-    const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=public_metrics,created_at&max_results=5`, {
+    const query = encodeURIComponent(`${subject} career OR ${subject} trends OR ${subject} jobs -is:retweet -is:reply lang:en`);
+    const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=public_metrics,created_at,author_id&max_results=10`, {
       headers: {
         'Authorization': `Bearer ${process.env.X_API_KEY}`,
         'Content-Type': 'application/json'
@@ -648,24 +648,26 @@ async function fetchTrends(subject: string) {
     });
 
     if (!response.ok) {
-      console.error('X API Error:', response.status, await response.text());
-      return trends;
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('X API Error:', errorData);
+      const errorText = await response.text();
+      console.error('X API Error:', response.status, errorText);
       return trends;
     }
 
     const data = await response.json();
+    console.log('X API Response:', JSON.stringify(data, null, 2));
+    
     if (!data.data || !Array.isArray(data.data)) {
       console.warn('Invalid response format from X API');
       return trends;
     }
 
-    // Sort by engagement (likes + retweets)
-    const sortedTweets = data.data
+    // Filter and sort tweets by engagement
+    const relevantTweets = data.data
+      .filter(tweet => 
+        tweet.text.toLowerCase().includes(subject.toLowerCase()) &&
+        tweet.public_metrics &&
+        (tweet.public_metrics.like_count > 0 || tweet.public_metrics.retweet_count > 0)
+      )
       .sort((a, b) => {
         const aEngagement = (a.public_metrics?.like_count || 0) + (a.public_metrics?.retweet_count || 0);
         const bEngagement = (b.public_metrics?.like_count || 0) + (b.public_metrics?.retweet_count || 0);
@@ -673,13 +675,16 @@ async function fetchTrends(subject: string) {
       })
       .slice(0, 2);
 
-    const xPosts = sortedTweets.map((tweet, index) => ({
+    const xPosts = relevantTweets.map((tweet, index) => ({
       id: `x-${index}`,
       title: `Trending in ${subject}`,
       description: tweet.text.length > 150 ? tweet.text.substring(0, 147) + '...' : tweet.text,
       url: `https://twitter.com/i/web/status/${tweet.id}`,
       type: 'post',
-      metrics: tweet.public_metrics
+      metrics: {
+        likes: tweet.public_metrics.like_count,
+        retweets: tweet.public_metrics.retweet_count
+      }
     }));
 
     return [...trends, ...xPosts];
