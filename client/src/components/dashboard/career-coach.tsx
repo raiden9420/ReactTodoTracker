@@ -1,11 +1,8 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Send } from "lucide-react";
 
 type Message = {
@@ -39,7 +36,7 @@ export default function CareerCoach({ isOpen, onClose }: CareerCoachProps) {
 
   // Fetch user data
   const { data: userData } = useQuery<UserData>({
-    queryKey: ['/api/user/1'], // Using default user ID 1
+    queryKey: ['/api/user/1'],
   });
 
   // Send message mutation
@@ -50,7 +47,7 @@ export default function CareerCoach({ isOpen, onClose }: CareerCoachProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           message,
-          userData // Include user data for context
+          userData
         })
       });
       return response.json();
@@ -84,29 +81,19 @@ export default function CareerCoach({ isOpen, onClose }: CareerCoachProps) {
     }
   };
 
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      setMessages([{
-        id: 0,
-        message: "Hi! I'm your AI career coach. I can help you explore career paths, develop skills, and achieve your professional goals. How can I assist you today?",
-        sender: 'bot',
-        timestamp: new Date().toISOString()
-      }]);
-    }
-  }, [isOpen]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!userInput.trim() || isSending) return;
 
-    const userMessage = {
+    const userMessage: Message = {
       id: Date.now(),
       message: userInput,
-      sender: 'user' as const,
+      sender: 'user',
       timestamp: new Date().toISOString()
     };
-    
-    setMessages(prev => [...prev, userMessage]);
+
+    setMessages(prevMessages => [...prevMessages, userMessage]);
     setUserInput('');
     scrollToBottom();
     sendMessage(userInput);
@@ -127,60 +114,42 @@ export default function CareerCoach({ isOpen, onClose }: CareerCoachProps) {
         <h1 className="text-xl font-semibold text-foreground">Career Coach</h1>
       </header>
 
-      <ScrollArea className="flex-1 p-4">
-        <div ref={chatContainerRef} className="space-y-4">
-          {messages.map((message, index) => (
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+      >
+        {messages.map(msg => (
+          <div
+            key={msg.id}
+            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
             <div
-              key={index}
-              className={`flex ${message.sender === 'bot' ? 'items-start space-x-3' : 'flex-row-reverse items-start'} max-w-3xl ${message.sender === 'user' ? 'ml-auto' : ''}`}
+              className={`max-w-[80%] rounded-lg p-3 ${
+                msg.sender === 'user'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted'
+              }`}
             >
-              <div className={`flex-shrink-0 h-10 w-10 rounded-full ${message.sender === 'bot' ? 'bg-primary/20' : 'bg-green-500/20'} flex items-center justify-center`}>
-                <span className={message.sender === 'bot' ? 'text-primary font-semibold' : 'text-green-500 font-semibold'}>
-                  {message.sender === 'bot' ? 'E' : 'U'}
-                </span>
-              </div>
-              <div className={`${message.sender === 'bot' ? 'bg-card border border-border' : 'bg-muted'} p-4 rounded-lg shadow-sm max-w-sm sm:max-w-md md:max-w-lg ${message.sender === 'user' ? 'mr-3' : ''}`}>
-                <p className="text-foreground whitespace-pre-line">{message.message}</p>
-              </div>
+              {msg.message}
             </div>
-          ))}
-          
-          {isSending && (
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <span className="text-primary font-semibold">E</span>
-              </div>
-              <Card className="p-3">
-                <div className="flex space-x-1">
-                  <div className="bg-primary/30 w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-                  <div className="bg-primary/30 w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  <div className="bg-primary/30 w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
-                </div>
-              </Card>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+          </div>
+        ))}
+      </div>
 
-      <div className="p-4 bg-card border-t border-border">
-        <form className="flex items-center space-x-2" onSubmit={handleSubmit}>
-          <Input 
-            type="text"
+      <form onSubmit={handleSubmit} className="p-4 border-t border-border">
+        <div className="flex gap-2">
+          <Input
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Type your question..."
+            placeholder="Type your message..."
             disabled={isSending}
-            className="flex-1"
           />
-          <Button 
-            type="submit" 
-            disabled={!userInput.trim() || isSending}
-            size="icon"
-          >
-            <Send className="h-5 w-5" />
+          <Button type="submit" disabled={isSending}>
+            <Send className="h-4 w-4" />
+            <span className="sr-only">Send message</span>
           </Button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }
