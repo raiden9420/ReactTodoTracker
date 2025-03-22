@@ -224,11 +224,23 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
 
     // Get the user profile
     const profile = await storage.getUserProfile(userId);
+    
+    // Since dashboard only loads after survey, profile should exist
+    if (!profile) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          video: null
+        }
+      });
+    }
 
-    if (!profile || !profile.subjects || !profile.interests) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Complete user profile not found. Please complete the survey first." 
+    if (!profile.subjects || !profile.interests) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          video: null
+        }
       });
     }
 
