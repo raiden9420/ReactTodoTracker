@@ -56,32 +56,37 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {trends.map((trend: Trend) => (
-            <div key={trend.id} className="bg-accent/50 rounded-lg p-4 hover:bg-accent/70 transition-colors">
-              <div className="flex items-start gap-3">
-                <div className="rounded-md bg-primary/10 p-2">
-                  {trend.type === 'article' ? (
-                    <BookOpen className="h-5 w-5 text-primary" />
-                  ) : (
-                    <Twitter className="h-5 w-5 text-primary" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium leading-tight">{trend.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-1">{trend.description}</p>
-                  <a 
-                    href={trend.url}
-                    target="_blank"
-                    rel="noopener noreferrer" 
-                    className="inline-flex items-center text-sm text-primary hover:underline mt-2"
-                  >
-                    {trend.type === 'article' ? 'Read article' : 'View post'} →
-                  </a>
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Loading trends...
+            </p>
+          ) : trends.length > 0 ? (
+            trends.map((trend: Trend) => (
+              <div key={trend.id} className="bg-accent/50 rounded-lg p-4 hover:bg-accent/70 transition-colors">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-md bg-primary/10 p-2">
+                    {trend.type === 'article' ? (
+                      <BookOpen className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Twitter className="h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium leading-tight">{trend.title}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{trend.description}</p>
+                    <a 
+                      href={trend.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-sm text-primary hover:underline mt-2"
+                    >
+                      {trend.type === 'article' ? 'Read article' : 'View post'} →
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          {!isLoading && trends.length === 0 && (
+            ))
+          ) : (
             <p className="text-sm text-muted-foreground text-center py-4">
               No trends available. Try refreshing.
             </p>
