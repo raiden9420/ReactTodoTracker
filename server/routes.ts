@@ -647,7 +647,7 @@ async function fetchTrends(subject: string) {
     const query = encodeURIComponent(`${subject} career OR ${subject} trends OR ${subject} jobs -is:retweet -is:reply lang:en`);
     const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=public_metrics,created_at,author_id&max_results=10`, {
       headers: {
-        'Authorization': `${process.env.X_API_KEY}`,
+        'Authorization': `Bearer ${process.env.X_API_KEY}`,
         'Content-Type': 'application/json'
       }
     });
