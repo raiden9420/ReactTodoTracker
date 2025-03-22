@@ -25,7 +25,7 @@ type SidebarProps = {
   profile: Profile;
 };
 
-export function Sidebar({ isOpen, setIsOpen, profile }: SidebarProps) {
+export function Sidebar({ isOpen, onOpenChange, profile }: SidebarProps) {
   const [recentItems] = useState([
     { id: 1, name: "Career Assessments", href: "#assessments" },
     { id: 2, name: "Industry Insights", href: "#insights" },
@@ -84,7 +84,7 @@ export function Sidebar({ isOpen, setIsOpen, profile }: SidebarProps) {
             <Link 
               key={item.label} 
               href={item.href}
-              onClick={() => setIsOpen(false)}
+              onClick={() => onOpenChange(false)}
             >
               <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${
                 item.active 
