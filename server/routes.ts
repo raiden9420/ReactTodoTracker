@@ -579,20 +579,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   function generateTrendingTopics(subjects: string[]) {
     const primarySubject = subjects[0] || 'Career Development';
+    const currentYear = new Date().getFullYear();
     return [
       {
         id: "trend1",
-        title: `Latest ${primarySubject} Developments`,
-        description: `Current trends and innovations in ${primarySubject} that are shaping the industry.`,
+        title: `${currentYear} ${primarySubject} Trends`,
+        description: `Latest industry developments and in-demand skills for ${primarySubject}.`,
         url: "https://www.linkedin.com/learning",
-        type: "trend"
+        type: "industry"
       },
       {
         id: "trend2",
-        title: `${primarySubject} Career Paths`,
-        description: `Explore emerging career opportunities and growth paths in ${primarySubject}.`,
-        url: "https://www.edx.org",
-        type: "trend"
+        title: `Emerging ${primarySubject} Roles`,
+        description: `Hot jobs and career opportunities in ${primarySubject}.`,
+        url: "https://www.linkedin.com/learning",
+        type: "careers"
       }
     ];
   }

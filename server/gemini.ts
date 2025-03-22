@@ -6,7 +6,7 @@ if (!process.env.GEMINI_API_KEY) {
 
 export const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-export async function suggestGoals(subjects: string[], skills: string, interests: string, count: number = 2): Promise<string[]> {
+export async function suggestGoals(subjects: string[], skills: string, interests: string, count: number = 1): Promise<string[]> {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const subjectsString = subjects.join(", ");
@@ -111,18 +111,16 @@ export async function getCourseRecommendation(profile: any) {
       }
       const course = JSON.parse(jsonMatch[0]);
       
-      // Validate and provide defaults if needed
-      // Generate category-based URLs for each platform
-      // Return the course directly from Gemini's response
+      // Use LinkedIn Learning as default platform instead of Udemy
       return {
         success: true,
         course: {
-          title: course.title || "Recommended Course",
-          description: course.description || "Learn essential skills in your field",
+          title: course.title || `${profile.subjects[0]} Fundamentals`,
+          description: course.description || "Master essential skills and concepts",
           duration: course.duration || "Self-paced",
           level: course.level || "All levels",
-          platform: "Udemy",
-          url: course.url || `https://www.udemy.com/courses/search/?q=${encodeURIComponent(profile.subjects[0])}`
+          platform: "LinkedIn Learning",
+          url: `https://www.linkedin.com/learning/search?keywords=${encodeURIComponent(profile.subjects[0])}`
         }
       };
     } catch (parseError) {
