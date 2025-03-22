@@ -623,40 +623,59 @@ async function fetchTrends(subject: string) {
       description: `Key skills and technologies that are shaping the ${subject} field this year. Learn what employers are looking for and how to stay competitive.`,
       url: "https://www.bls.gov/ooh/",
       type: "article",
+    },
+    {
+      id: "trend2",
+      title: `${subject} Industry Outlook`,
+      description: `Latest market trends and future projections for careers in ${subject}.`,
+      url: `https://www.onetonline.org/find/quick?s=${encodeURIComponent(subject)}`,
+      type: "article",
     }
   ];
 
+  if (!process.env.X_API_KEY) {
+    console.warn('X_API_KEY not configured');
+    return trends;
+  }
+
   try {
-    // Fetch X posts
     const query = encodeURIComponent(`${subject} jobs career trends -is:retweet -is:reply lang:en`);
     const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?query=${query}&tweet.fields=created_at,public_metrics&max_results=5`, {
       headers: {
-        'Authorization': `Bearer ${process.env.X_API_KEY}`
+        'Authorization': `Bearer ${process.env.X_API_KEY}`,
+        'Content-Type': 'application/json'
       }
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch X posts');
+      const errorData = await response.json();
+      console.error('X API Error:', errorData);
+      return trends;
     }
 
     const data = await response.json();
-    if (data.data && data.data.length > 0) {
-      // Add up to 2 X posts
-      const xPosts = data.data.slice(0, 2).map((post: any, index: number) => ({
+    if (!data.data || !Array.isArray(data.data)) {
+      console.warn('Invalid response format from X API');
+      return trends;
+    }
+
+    const xPosts = data.data
+      .slice(0, 2)
+      .filter(post => post.text && post.id)
+      .map((post, index) => ({
         id: `x-${index}`,
         title: `Latest in ${subject}`,
         description: post.text.length > 150 ? post.text.substring(0, 147) + '...' : post.text,
         url: `https://twitter.com/i/web/status/${post.id}`,
         type: 'post',
-        metrics: post.public_metrics
+        metrics: post.public_metrics || {}
       }));
-      trends.push(...xPosts);
-    }
+
+    return [...trends, ...xPosts];
   } catch (error) {
     console.error('Error fetching X posts:', error);
+    return trends;
   }
-
-  return trends;
 }
 
 function generateTrendingTopics(subjects: string[]) {
