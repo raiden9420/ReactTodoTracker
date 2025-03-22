@@ -236,21 +236,34 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
     const primarySubject = profile.subjects[0] || "career development";
     const interests = profile.interests?.split(',')[0]?.trim() || "professional development";
 
-    // Generate search query based on profile
+    // Check for YouTube API key
     const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+    if (!YOUTUBE_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: "YouTube API key not configured"
+      });
+    }
+
+    // Generate search query based on profile
     const searchQuery = encodeURIComponent(`${primarySubject} ${interests} career guide 2024`);
 
-    // Fetch video recommendations from YouTube
-    const youtubeResponse = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`
-    );
+    try {
+      // Fetch video recommendations from YouTube
+      const youtubeResponse = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`
+      );
 
-    const youtubeData = await youtubeResponse.json();
-    const video = youtubeData.items?.[0];
+      const youtubeData = await youtubeResponse.json();
 
-    if (!video) {
-      throw new Error("No video recommendations found");
-    }
+      if (youtubeData.error) {
+        throw new Error(youtubeData.error.message || "YouTube API error");
+      }
+
+      const video = youtubeData.items?.[0];
+      if (!video) {
+        throw new Error("No video recommendations found");
+      }
 
     return res.status(200).json({
       success: true,
@@ -264,9 +277,10 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
     });
   } catch (error) {
     console.error("Error getting recommendations:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to get recommendations";
     return res.status(500).json({ 
       success: false, 
-      message: "Failed to get recommendations" 
+      message: errorMessage
     });
   }
 });
