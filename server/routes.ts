@@ -687,8 +687,8 @@ async function fetchTrends(subject: string) {
       url: `https://twitter.com/i/web/status/${tweet.id}`,
       type: 'post',
       metrics: {
-        likes: tweet.public_metrics.like_count,
-        retweets: tweet.public_metrics.retweet_count
+        like_count: tweet.public_metrics.like_count,
+        retweet_count: tweet.public_metrics.retweet_count
       }
     }));
 
