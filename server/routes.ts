@@ -538,30 +538,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-    // Career trends endpoint
-    app.get("/api/career-trends/:subject", async (req: Request, res: Response) => {
-      try {
-        const { subject } = req.params;
-        const trends = await fetchCareerTrends(subject);
-        
-        return res.status(200).json({
-          success: true,
-          data: trends
-        });
-      } catch (error) {
-        console.error("Error fetching career trends:", error);
-        return res.status(500).json({
-          success: false,
-          message: "Failed to fetch career trends"
-        });
-      }
-    });
-
     const httpServer = createServer(app);
     return httpServer;
   }
 
-  // Helper function to generate trending topics based on user's subjects
+  // Helper function to validate requests
   async function validateRequest(req: any, res: any, next: any) {
     try {
       await next();

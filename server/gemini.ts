@@ -76,13 +76,14 @@ export async function getCourseRecommendation(profile: any) {
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const prompt = `Given this user profile with subjects: ${profile.subjects.join(", ")}, interests: ${profile.interests}, and skills: ${profile.skills}, suggest a specific online course recommendation.
+    const prompt = `Given this user profile with subjects: ${profile.subjects.join(", ")}, interests: ${profile.interests}, and skills: ${profile.skills}, suggest a specific online course recommendation from any major learning platform (edX, Udemy, LinkedIn Learning, etc.).
     Format the response as a JSON object with properties:
     - title: The course title
     - description: A brief 1-2 sentence description
     - duration: Estimated time to complete (e.g. "2 weeks")
     - level: Difficulty level (Beginner/Intermediate/Advanced)
-    - url: A URL to a relevant Coursera course (e.g. "https://www.coursera.org/learn/...")
+    - platform: The learning platform name
+    - url: A URL to the course
 
     Example:
     {
