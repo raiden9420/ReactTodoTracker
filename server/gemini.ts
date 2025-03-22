@@ -65,7 +65,7 @@ export async function getCourseRecommendation(profile: any) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const prompt = `Given this user profile with subjects: ${profile.subjects.join(", ")}, interests: ${profile.interests}, and skills: ${profile.skills}, suggest a specific online course recommendation.
     Format the response as a JSON object with properties:
     - title: The course title
@@ -85,7 +85,7 @@ export async function getCourseRecommendation(profile: any) {
     const response = await result.response;
     const text = response.text();
     console.log("Raw Gemini response:", text);
-    
+
     try {
       // Clean the response text to ensure it only contains JSON
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -116,15 +116,15 @@ export async function getRecommendations(profile: any) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const prompt = `Given this user profile: ${JSON.stringify(profile)}, suggest 3 learning recommendations.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
+
     const recommendations = text.split('\n').filter(Boolean);
-    
+
     if (recommendations.length === 0) {
       return { success: false, message: "No recommendations generated" };
     }
