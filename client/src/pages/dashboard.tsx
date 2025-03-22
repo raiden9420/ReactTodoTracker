@@ -71,12 +71,12 @@ export default function Dashboard() {
   
   // Update dashboard data when received from API
   useEffect(() => {
-    if (dashboardData) {
+    if (dashboardData?.user) {
       setProfile({
-        name: dashboardData.username || "Career Explorer",
-        avatar: dashboardData.avatar || "",
-        journey: dashboardData.journey || "Getting Started",
-        progress: dashboardData.progress || 25,
+        name: dashboardData.user.username || "Career Explorer",
+        avatar: dashboardData.user.avatarUrl || "",
+        journey: dashboardData.user.journey || "Getting Started",
+        progress: dashboardData.user.progress || 25,
       });
       
       if (dashboardData.goals) {
@@ -138,9 +138,9 @@ export default function Dashboard() {
         {/* Dashboard Content */}
         <div className="p-4 sm:p-6 space-y-6">
           <WelcomeSection 
-            username={dashboardData?.user?.username || "User"} 
-            progress={dashboardData?.user?.progress || 0} 
-            avatar={dashboardData?.user?.avatar} 
+            username={profile.name} 
+            progress={profile.progress} 
+            avatar={profile.avatar} 
           />
 
           {/* Dashboard Grids */}
