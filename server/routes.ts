@@ -638,6 +638,8 @@ async function fetchTrends(subject: string) {
     }
   ];
 
+  // Temporarily disabled X API integration
+  /*
   if (!process.env.X_API_KEY) {
     console.warn('X_API_KEY not configured');
     return trends;
@@ -705,6 +707,8 @@ async function fetchTrends(subject: string) {
     console.error('Error fetching X posts:', error);
     return trends;
   }
+  */
+  return trends;
 }
 
 function generateTrendingTopics(subjects: string[]) {
