@@ -594,13 +594,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ];
     
     return trends;
-      const text = result.response.text();
-      const trends = JSON.parse(text);
-      return trends;
-    } catch (error) {
-      console.error('Error generating career trends:', error);
-      return [];
-    }
   }
 
   function generateTrendingTopics(subjects: string[]) {
