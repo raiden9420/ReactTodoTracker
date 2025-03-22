@@ -40,18 +40,28 @@ Response must be only the JSON array, no other text.`;
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
-    const match = text.match(/\[[\s\S]*\]/);
-
-    if (match) {
-      try {
-        const goals = JSON.parse(match[0]);
-        return Array.isArray(goals) && goals.length > 0 ? [goals[0]] : [];
-      } catch (parseError) {
-        console.error("Error parsing Gemini response:", parseError);
-        return [];
+    console.log("Raw Gemini response for goals:", text);
+    
+    // First try to parse the entire response as JSON
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.slice(0, 1); // Return first goal
+      }
+    } catch (e) {
+      // If direct parsing fails, try to extract JSON array
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) {
+        try {
+          const goals = JSON.parse(match[0]);
+          return Array.isArray(goals) && goals.length > 0 ? [goals[0]] : [];
+        } catch (parseError) {
+          console.error("Error parsing Gemini response:", parseError);
+        }
       }
     }
-
+    
+    console.error("Could not generate valid goals from response");
     return [];
   } catch (error) {
     console.error("Error generating goals with Gemini:", error);
