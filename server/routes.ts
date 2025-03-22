@@ -222,27 +222,27 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
       });
     }
 
-    // Get the user profile
-    const profile = await storage.getUserProfile(userId);
-    
-    // Since dashboard only loads after survey, profile should exist
-    if (!profile) {
-      return res.status(200).json({
-        success: true,
-        data: {
-          video: null
-        }
-      });
-    }
+    try {
+      // Get both user and profile
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            video: null
+          }
+        });
+      }
 
-    if (!profile.subjects || !profile.interests) {
-      return res.status(200).json({
-        success: true,
-        data: {
-          video: null
-        }
-      });
-    }
+      const profile = await storage.getUserProfile(userId);
+      if (!profile || !profile.subjects || !profile.interests) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            video: null
+          }
+        });
+      }
 
     // Get primary subject and ensure data exists
     const primarySubject = profile.subjects[0] || "career development";
