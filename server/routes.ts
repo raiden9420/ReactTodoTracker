@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { genAI } from "./gemini";
 import { surveySchema, goalSchema, createGoalSchema, updateGoalSchema } from "@shared/schema";
 import { z } from "zod";
 import { suggestGoals, getCourseRecommendation } from "./gemini";
@@ -544,29 +545,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   async function fetchCareerTrends(subject: string) {
-    // This would typically use real API calls to news sources and Twitter
-    // For demo, returning structured mock data
-    return {
-      articles: [
-        {
-          id: "1",
-          title: `Latest Trends in ${subject}`,
-          description: `Emerging career opportunities and growth areas in ${subject} field for 2024`,
-          url: `https://www.bls.gov/ooh/life-physical-and-social-science/${subject.toLowerCase()}.htm`,
-          type: "article"
-        }
-      ],
-      posts: [
-        {
-          id: "2",
-          title: `#${subject}Careers Trending`,
-          description: `Industry professionals discussing latest ${subject} career opportunities and market demands`,
-          url: `https://twitter.com/search?q=${encodeURIComponent(`${subject} careers`)}`,
-          type: "post"
-        }
-      ]
-    };
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const prompt = `Generate 2 trending topics about careers in ${subject} for 2024.
+    Format response as JSON array with objects containing:
+    {
+      id: string,
+      title: string,
+      description: string (2-3 sentences),
+      url: string (relevant career resource URL),
+      type: "article" | "post"
+    }`;
+
+    try {
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      const trends = JSON.parse(text);
+      return trends;
+    } catch (error) {
+      console.error('Error generating career trends:', error);
+      return [];
+    }
   }
+
+  // Career trends endpoint
+  app.get("/api/career-trends/:subject", async (req: Request, res: Response) => {
+    try {
+      const { subject } = req.params;
+      const trends = await fetchCareerTrends(subject);
+      
+      return res.status(200).json({
+        success: true,
+        data: trends
+      });
+    } catch (error) {
+      console.error("Error fetching career trends:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch career trends"
+      });
+    }
+  });
 
   function generateTrendingTopics(subjects: string[]) {
     // This will be replaced by real data from fetchCareerTrends

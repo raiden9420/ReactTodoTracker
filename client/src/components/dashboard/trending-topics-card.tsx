@@ -25,7 +25,12 @@ async function fetchTrends(subject: string) {
 export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['career-trends', userId],
-    queryFn: () => fetchTrends('Biology'), // Replace with actual subject from user profile
+    queryFn: async () => {
+      const userResponse = await fetch(`/api/user/${userId}`);
+      const userData = await userResponse.json();
+      const subject = userData.user.subjects?.[0] || 'Career Development';
+      return fetchTrends(subject);
+    },
     enabled: !!userId,
   });
 
