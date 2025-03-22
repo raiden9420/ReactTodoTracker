@@ -133,10 +133,6 @@ export async function getCourseRecommendation(profile: any) {
       };
     }
   } catch (error) {
-      console.error("Error parsing course recommendation:", parseError);
-      return { success: false, message: "Failed to parse course recommendation" };
-    }
-  } catch (error) {
     console.error('Gemini API error:', error);
     return { 
       success: false, 
