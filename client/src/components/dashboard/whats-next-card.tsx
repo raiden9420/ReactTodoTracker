@@ -19,8 +19,6 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
   const fetchRecommendations = async () => {
     try {
       setIsLoading(true);
-      setVideo(null); // Reset video state before fetching
-      
       const profileResponse = await fetch(`/api/user/${userId}`);
       const profileData = await profileResponse.json();
 
@@ -33,13 +31,7 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
         return;
       }
 
-      const response = await fetch(`/api/personalized-recommendations/${userId}`, {
-        cache: 'no-store', // Prevent caching
-        headers: {
-          'Cache-Control': 'no-cache'
-        }
-      });
-      
+      const response = await fetch(`/api/personalized-recommendations/${userId}`);
       const data = await response.json();
 
       if (data.success && data.data.video) {
