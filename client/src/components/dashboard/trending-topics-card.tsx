@@ -17,11 +17,22 @@ type Trend = {
 };
 
 async function fetchTrends(subject: string) {
-  const response = await fetch(`/api/career-trends/${encodeURIComponent(subject)}`);
-  if (!response.ok) throw new Error('Failed to fetch trends');
-  const data = await response.json();
-  if (!data.success) throw new Error(data.message || 'Failed to fetch trends');
-  return data.data;
+  try {
+    const response = await fetch(`/api/career-trends/${encodeURIComponent(subject)}`);
+    if (!response.ok) {
+      console.error(`API response not ok: ${response.status}`);
+      throw new Error('Failed to fetch trends');
+    }
+    const data = await response.json();
+    if (!data.success) {
+      console.error('API returned error:', data.message);
+      throw new Error(data.message || 'Failed to fetch trends');
+    }
+    return data.data;
+  } catch (error) {
+    console.error('Error in fetchTrends:', error);
+    throw error;
+  }
 }
 
 export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
@@ -100,7 +111,7 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
             ))
           ) : (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No trends available at the momentg.
+              No trends available at the moment.
             </p>
           )}
         </div>
