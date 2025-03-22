@@ -12,13 +12,11 @@ type WhatsNextProps = {
 };
 
 export function WhatsNextCard({ userId, course }: WhatsNextProps) {
-  const [video, setVideo] = useState<{ title: string; description: string; url: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  const fetchRecommendations = async () => {
-    try {
-      setIsLoading(true);
+  
+  const { data: video, isLoading } = useQuery({
+    queryKey: [`/api/personalized-recommendations/${userId}`],
+    queryFn: async () => {
       const profileResponse = await fetch(`/api/user/${userId}`);
       const profileData = await profileResponse.json();
 
@@ -28,32 +26,19 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
           description: "Please complete your profile survey to get video recommendations.",
           variant: "default"
         });
-        return;
+        return null;
       }
 
       const response = await fetch(`/api/personalized-recommendations/${userId}`);
       const data = await response.json();
 
       if (data.success && data.data.video) {
-        setVideo(data.data.video);
-      } else {
-        throw new Error(data.message || 'Failed to load video recommendation');
+        return data.data.video;
       }
-    } catch (error) {
-      console.error('Error fetching recommendations:', error);
-      toast({
-        title: "Error",
-        description: "Please ensure your profile is complete and try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRecommendations();
-  }, [userId]);
+      throw new Error(data.message || 'Failed to load video recommendation');
+    },
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+  });
 
   return (
     <Card>
