@@ -83,8 +83,9 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
           method: 'DELETE'
         });
       }
-      
+
       queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/todos/${userId}`] });
     } catch (error) {
       console.error('Error updating goal:', error);
       toast({
