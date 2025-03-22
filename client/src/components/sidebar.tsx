@@ -13,12 +13,13 @@ type NavItem = {
 
 type SidebarProps = {
   isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onOpenChange: (open: boolean) => void;
+  onCareerCoachClick: () => void;
   profile: {
     name: string;
     journey: string;
     progress: number;
-    avatarUrl?: string;
+    avatar?: string;
   };
 };
 
@@ -47,7 +48,7 @@ export function Sidebar({ isOpen, setIsOpen, profile }: SidebarProps) {
         {/* User Profile */}
         <div className="flex items-center gap-3 px-2 py-3">
           <Avatar className="h-10 w-10 border border-border flex-shrink-0">
-            <AvatarImage src={profile.avatarUrl || "https://randomuser.me/api/portraits/women/32.jpg"} alt="User avatar" />
+            <AvatarImage src={profile.avatar || "https://randomuser.me/api/portraits/women/32.jpg"} alt="User avatar" />
             <AvatarFallback>{profile.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
           </Avatar>
           
