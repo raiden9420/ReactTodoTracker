@@ -10,7 +10,7 @@ type WhatsNextProps = {
 
 export function WhatsNextCard({ userId }: WhatsNextProps) {
   const [video, setVideo] = useState<{ title: string; description: string; url: string } | null>(null);
-  const [course, setCourse] = useState<{ title: string; description: string; duration: string; level: string } | null>(null);
+  const [course, setCourse] = useState<{ title: string; description: string; duration: string; level: string; url: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -98,7 +98,11 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
                   </div>
                 </div>
               </div>
-              <Button variant="outline" className="w-full mt-3">
+              <Button 
+                variant="outline" 
+                className="w-full mt-3"
+                onClick={() => window.open(course.url, '_blank')}
+              >
                 Start Learning
               </Button>
             </div>

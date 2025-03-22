@@ -82,6 +82,7 @@ export async function getCourseRecommendation(profile: any) {
     - description: A brief 1-2 sentence description
     - duration: Estimated time to complete (e.g. "2 weeks")
     - level: Difficulty level (Beginner/Intermediate/Advanced)
+    - url: A URL to a relevant Coursera course (e.g. "https://www.coursera.org/learn/...")
 
     Example:
     {
