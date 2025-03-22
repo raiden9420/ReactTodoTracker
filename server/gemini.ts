@@ -84,9 +84,18 @@ export async function getCourseRecommendation(profile: any) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
+    console.log("Raw Gemini response:", text);
     
     try {
-      const course = JSON.parse(text);
+      // Clean the response text to ensure it only contains JSON
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("No JSON found in response");
+      }
+      const course = JSON.parse(jsonMatch[0]);
+      if (!course.title || !course.description || !course.duration || !course.level) {
+        throw new Error("Invalid course data structure");
+      }
       return { success: true, course };
     } catch (parseError) {
       console.error("Error parsing course recommendation:", parseError);
