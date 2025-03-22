@@ -118,10 +118,18 @@ export function GoalsCard({ goals, userId }: GoalsCardProps) {
   const handleRefreshSuggestions = async () => {
     setIsLoading(true);
     try {
-      await apiRequest(`/api/goals/suggest/${userId}`);
+      const response = await apiRequest(`/api/goals/suggest/${userId}`);
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to refresh goals');
+      }
 
-      // Invalidate goals and recommendations cache to refresh
-      queryClient.invalidateQueries({ queryKey: [`/api/dashboard/${userId}`] });
+      // Force refetch dashboard data to get new goals
+      await queryClient.fetchQuery({ 
+        queryKey: [`/api/dashboard/${userId}`],
+        staleTime: 0
+      });
+
+      // Invalidate other related queries
       queryClient.invalidateQueries({ queryKey: [`/api/personalized-recommendations/${userId}`] });
 
       toast({
