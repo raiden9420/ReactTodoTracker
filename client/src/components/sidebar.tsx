@@ -36,7 +36,7 @@ export function Sidebar({ isOpen, onOpenChange, profile }: SidebarProps) {
     { label: "Dashboard", href: "/", icon: <LayoutDashboard className="w-4 h-4" />, active: true },
     { label: "Job Matches", href: "#jobs", icon: <Briefcase className="w-4 h-4" /> },
     { label: "Learning", href: "#learning", icon: <GraduationCap className="w-4 h-4" /> },
-    { label: "Career Coach", href: "#coach", icon: <MessageSquare className="w-4 h-4" /> },
+    { label: "Career Coach", href: "#", icon: <MessageSquare className="w-4 h-4" />, onClick: onCareerCoachClick },
     { label: "Settings", href: "#settings", icon: <Settings className="w-4 h-4" /> },
   ];
 
@@ -84,7 +84,13 @@ export function Sidebar({ isOpen, onOpenChange, profile }: SidebarProps) {
             <Link 
               key={item.label} 
               href={item.href}
-              onClick={() => onOpenChange(false)}
+              onClick={(e) => {
+                if (item.onClick) {
+                  e.preventDefault();
+                  item.onClick();
+                }
+                onOpenChange(false);
+              }}
             >
               <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${
                 item.active 
