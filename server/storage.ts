@@ -54,7 +54,7 @@ export const storage = {
 
   async getUserProfile(userId: number) {
     return new Promise((resolve, reject) => {
-      db.get('SELECT name, email, subjects, interests, skills, goal, thinking_style, extra_info, avatar, created_at FROM users WHERE id = ?', [userId], (err, row) => {
+      db.get('SELECT subjects, interests, skills, goal, thinking_style, extra_info, created_at FROM user_profiles WHERE user_id = ?', [userId], (err, row) => {
         if (err) reject(err);
         if (row && row.subjects) {
           try {
