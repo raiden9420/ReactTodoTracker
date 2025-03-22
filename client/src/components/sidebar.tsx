@@ -11,16 +11,18 @@ type NavItem = {
   active?: boolean;
 };
 
+interface Profile {
+  name: string;
+  journey: string;
+  progress: number;
+  avatar?: string;
+}
+
 type SidebarProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onCareerCoachClick: () => void;
-  profile: {
-    name: string;
-    journey: string;
-    progress: number;
-    avatar?: string;
-  };
+  profile: Profile;
 };
 
 export function Sidebar({ isOpen, setIsOpen, profile }: SidebarProps) {

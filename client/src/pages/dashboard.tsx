@@ -71,10 +71,10 @@ export default function Dashboard() {
 
   // Initialize empty states
   const [profile, setProfile] = useState({
-    name: "",
+    name: "Career Explorer",
     avatar: "",
-    journey: "",
-    progress: 0,
+    journey: "Getting Started",
+    progress: 25
   });
 
   const [goals, setGoals] = useState([]);
@@ -123,6 +123,7 @@ export default function Dashboard() {
         isOpen={isSidebarOpen} 
         onOpenChange={setIsSidebarOpen}
         onCareerCoachClick={toggleCareerCoach}
+        profile={profile} // Pass profile prop to Sidebar
       />
 
       <main className="flex-1 min-w-0">
