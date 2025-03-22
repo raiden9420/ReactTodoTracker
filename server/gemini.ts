@@ -117,7 +117,7 @@ export async function getCourseRecommendation(profile: any) {
           description: "Learn essential data analysis skills and tools",
           duration: "4 weeks",
           level: "Beginner",
-          url: "https://www.coursera.org/learn/data-analysis"
+          url: "https://www.coursera.org/learn/data-analytics-foundations"
         }
       };
     }

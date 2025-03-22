@@ -594,9 +594,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ];
     
     return trends;
-
-    try {
-      const result = await model.generateContent(prompt);
       const text = result.response.text();
       const trends = JSON.parse(text);
       return trends;
