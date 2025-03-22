@@ -14,7 +14,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Validate the request body using Zod schema
       const validatedData = surveySchema.safeParse(req.body);
-      
+
       if (!validatedData.success) {
         return res.status(400).json({ 
           success: false, 
@@ -22,13 +22,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: validatedData.error.flatten() 
         });
       }
-      
+
       // Get the survey data
       const surveyData = validatedData.data;
-      
+
       // Store the survey data (for now using demo user ID 1)
       const result = await storage.submitSurvey(surveyData);
-      
+
       // Return success response with user profile
       return res.status(200).json({ 
         success: true, 
@@ -53,27 +53,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user/:userId", async (req: Request, res: Response) => {
     try {
       const userId = parseInt(req.params.userId, 10);
-      
+
       if (isNaN(userId)) {
         return res.status(400).json({ 
           success: false, 
           message: "Invalid user ID" 
         });
       }
-      
+
       // Get the user
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ 
           success: false, 
           message: "User not found" 
         });
       }
-      
+
       // Get the user profile
       const profile = await storage.getUserProfile(userId);
-      
+
       // If no profile exists yet, return basic user info
       if (!profile) {
         return res.status(200).json({
@@ -85,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         });
       }
-      
+
       // Return user data with profile
       return res.status(200).json({
         success: true,
@@ -115,32 +115,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard/:userId", async (req: Request, res: Response) => {
     try {
       const userId = parseInt(req.params.userId, 10);
-      
+
       if (isNaN(userId)) {
         return res.status(400).json({ 
           success: false, 
           message: "Invalid user ID" 
         });
       }
-      
+
       // Get the user profile
       const profile = await storage.getUserProfile(userId);
-      
+
       if (!profile) {
         return res.status(404).json({ 
           success: false, 
           message: "User profile not found" 
         });
       }
-      
+
       // Get the user's learning goals
       let userGoals = await storage.getGoals(userId);
-      
+
       // Clear all existing goals if refreshing suggestions
       if (req.url.includes('/goals/suggest/')) {
         // Delete all existing goals
         await Promise.all(userGoals.map(goal => storage.deleteGoal(goal.id)));
-        
+
         // Generate only AI suggestions
         const suggestions = await suggestGoals(
           profile.subjects,
@@ -148,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           profile.interests,
           3 // Increased to 3 suggestions since we're not adding defaults
         );
-        
+
         if (suggestions && suggestions.length > 0) {
           userGoals = await Promise.all(
             suggestions.map(task => 
@@ -165,12 +165,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           data: userGoals
         });
       }
-      
+
       // If no goals exist, return empty array
       if (userGoals.length === 0) {
         userGoals = [];
       }
-      
+
       // Transform goals to match the dashboard format
       const formattedGoals = userGoals.map(goal => ({
         id: goal.id,
@@ -178,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         completed: goal.completed,
         progress: goal.completed ? 100 : 0
       }));
-      
+
       // Generate dashboard data based on user profile
       const dashboardData = {
         username: (await storage.getUser(userId))?.username || "User",
@@ -196,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           video: { title: "How to Network Effectively" }
         }
       };
-      
+
       return res.status(200).json({
         success: true,
         data: dashboardData
@@ -209,22 +209,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Personalized recommendations endpoint
 app.get("/api/personalized-recommendations/:userId", async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.userId, 10);
-    
+
     if (isNaN(userId)) {
       return res.status(400).json({ 
         success: false, 
         message: "Invalid user ID" 
       });
     }
-    
+
     // Get the user profile
     const profile = await storage.getUserProfile(userId);
-    
+
     if (!profile || !profile.subjects || !profile.interests) {
       return res.status(404).json({ 
         success: false, 
@@ -235,24 +235,23 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
     // Get primary subject and ensure data exists
     const primarySubject = profile.subjects[0] || "career development";
     const interests = profile.interests?.split(',')[0]?.trim() || "professional development";
-    
+
     // Generate search query based on profile
     const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-    const interests = profile.interests.split(',')[0].trim(); // Get first interest
     const searchQuery = encodeURIComponent(`${primarySubject} ${interests} career guide 2024`);
-    
+
     // Fetch video recommendations from YouTube
     const youtubeResponse = await fetch(
       `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`
     );
-    
+
     const youtubeData = await youtubeResponse.json();
     const video = youtubeData.items?.[0];
-    
+
     if (!video) {
       throw new Error("No video recommendations found");
     }
-    
+
     return res.status(200).json({
       success: true,
       data: {
@@ -273,29 +272,29 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
 });
 
 // Goals API endpoints
-  
+
   // GET AI-suggested goals (must be before the general /goals/:userId route to avoid conflict)
   app.get("/api/goals/suggest/:userId", async (req: Request, res: Response) => {
     try {
       const userId = parseInt(req.params.userId, 10);
-      
+
       if (isNaN(userId)) {
         return res.status(400).json({ 
           success: false, 
           message: "Invalid user ID" 
         });
       }
-      
+
       // Get the user profile to create personalized suggestions
       const profile = await storage.getUserProfile(userId);
-      
+
       if (!profile) {
         return res.status(404).json({ 
           success: false, 
           message: "User profile not found" 
         });
       }
-      
+
       // Generate new goal suggestion using Gemini AI
       const suggestions = await suggestGoals(
         profile.subjects,
@@ -303,7 +302,7 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
         profile.interests,
         1 // Number of suggestions to generate
       );
-      
+
       // If suggestions could not be generated, return a helpful message
       if (!suggestions || suggestions.length === 0) {
         return res.status(500).json({
@@ -311,7 +310,7 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
           message: "Could not generate goal suggestions at this time"
         });
       }
-      
+
       // Create only the AI-generated goals in the database
       const createdGoals = await Promise.all(
         suggestions.map(task => 
@@ -322,7 +321,7 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
           })
         )
       );
-      
+
       return res.status(200).json({
         success: true,
         message: "Goal suggestions generated successfully",
@@ -336,21 +335,21 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
       });
     }
   });
-  
+
   // GET all goals for a user
   app.get("/api/goals/:userId", async (req: Request, res: Response) => {
     try {
       const userId = parseInt(req.params.userId, 10);
-      
+
       if (isNaN(userId)) {
         return res.status(400).json({ 
           success: false, 
           message: "Invalid user ID" 
         });
       }
-      
+
       const goals = await storage.getGoals(userId);
-      
+
       return res.status(200).json({
         success: true,
         data: goals
@@ -363,13 +362,13 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
       });
     }
   });
-  
+
   // POST create a new goal
   app.post("/api/goals", async (req: Request, res: Response) => {
     try {
       // Validate request body
       const validatedData = createGoalSchema.safeParse(req.body);
-      
+
       if (!validatedData.success) {
         return res.status(400).json({ 
           success: false, 
@@ -377,10 +376,10 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
           errors: validatedData.error.flatten() 
         });
       }
-      
+
       // Create the goal
       const newGoal = await storage.createGoal(validatedData.data);
-      
+
       return res.status(201).json({
         success: true,
         message: "Goal created successfully",
@@ -394,15 +393,15 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
       });
     }
   });
-  
+
   // PUT update a goal
   app.put("/api/goals/:id", async (req: Request, res: Response) => {
     try {
       const goalId = req.params.id;
-      
+
       // Validate request body
       const validatedData = updateGoalSchema.safeParse(req.body);
-      
+
       if (!validatedData.success) {
         return res.status(400).json({ 
           success: false, 
@@ -410,17 +409,17 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
           errors: validatedData.error.flatten() 
         });
       }
-      
+
       // Update the goal
       const updatedGoal = await storage.updateGoal(goalId, validatedData.data);
-      
+
       if (!updatedGoal) {
         return res.status(404).json({ 
           success: false, 
           message: "Goal not found" 
         });
       }
-      
+
       return res.status(200).json({
         success: true,
         message: "Goal updated successfully",
@@ -434,22 +433,22 @@ app.get("/api/personalized-recommendations/:userId", async (req: Request, res: R
       });
     }
   });
-  
+
   // DELETE a goal
   app.delete("/api/goals/:id", async (req: Request, res: Response) => {
     try {
       const goalId = req.params.id;
-      
+
       // Delete the goal
       const success = await storage.deleteGoal(goalId);
-      
+
       if (!success) {
         return res.status(404).json({ 
           success: false, 
           message: "Goal not found" 
         });
       }
-      
+
       return res.status(200).json({
         success: true,
         message: "Goal deleted successfully"
@@ -487,7 +486,7 @@ function generateTrendingTopics(subjects: string[]) {
     { id: "3", name: "Resume Building", percentage: 68 },
     { id: "4", name: "Interview Skills", percentage: 65 }
   ];
-  
+
   // Add subject-specific topics if available
   if (subjects && subjects.length > 0) {
     const subjectTopics = subjects.slice(0, 2).map((subject, index) => ({
@@ -495,9 +494,9 @@ function generateTrendingTopics(subjects: string[]) {
       name: `${subject} Careers`,
       percentage: Math.floor(Math.random() * 15) + 55
     }));
-    
+
     return [...baseTopics, ...subjectTopics];
   }
-  
+
   return baseTopics;
 }

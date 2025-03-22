@@ -47,9 +47,12 @@ export function WhatsNextCard({ userId, course }: WhatsNextProps) {
       try {
         setIsLoading(true);
         const profileResponse = await fetch(`/api/user/${userId}`);
+        if (!profileResponse.ok) {
+          throw new Error('Failed to fetch user profile');
+        }
         const profileData = await profileResponse.json();
         
-        if (profileData.success && profileData.user.hasProfile) {
+        if (profileData.success && profileData.user?.hasProfile) {
           await fetchRecommendations();
         } else {
           toast({
