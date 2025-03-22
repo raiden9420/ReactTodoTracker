@@ -72,7 +72,7 @@ export function TrendingTopicsCard({ userId }: TrendingTopicsProps) {
                   <a 
                     href={trend.url}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="noopener noreferrer" 
                     className="inline-flex items-center text-sm text-primary hover:underline mt-2"
                   >
                     {trend.type === 'article' ? 'Read article' : 'View post'} →
