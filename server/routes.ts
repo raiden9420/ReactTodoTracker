@@ -287,29 +287,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ');
 
-        const videoRecommendation = {
-          title: `${formattedSubject} Career Guide`,
-          description: `Learn essential ${cleanSubject} skills and strategies for career growth`,
-          thumbnailUrl: `https://placehold.co/320x180?text=${encodeURIComponent(formattedSubject)}`,
-          url: `https://replit.com/learn/${encodeURIComponent(cleanSubject)}`,
-          channelTitle: "Replit Learning"
-        };
-
         // Generate targeted search query based on profile
-        const interests = profile.interests ? profile.interests.join(' ') : '';
-        const skills = profile.skills ? profile.skills.join(' ') : '';
-        const cleanInterests = interests.replace(/[^\w\s]/g, '');
+        const searchQuery = encodeURIComponent(
+          `${cleanSubject} career guide tutorial`
+        );
 
-        // Update searchQuery to include skills
-        searchQuery = encodeURIComponent(
-          `${cleanSubject} ${cleanInterests} tutorial career guide`
-        ).trim();
-
-        // Fetch relevant videos from YouTube with specific parameters
+        // Fetch relevant videos from YouTube
         const youtubeResponse = await fetch(
           `https://www.googleapis.com/youtube/v3/search?` + 
           `part=snippet&q=${searchQuery}&type=video&maxResults=5` +
-          `&key=${YOUTUBE_API_KEY}&relevanceLanguage=en` +
+          `&key=${process.env.YOUTUBE_API_KEY}&relevanceLanguage=en` +
           `&videoDuration=medium&order=relevance` + 
           `&videoEmbeddable=true&safeSearch=strict`
         );
@@ -338,11 +325,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           success: true,
           data: {
             video: {
-              title: bestVideo.snippet.title || `${cleanSubject} Career Guide`,
-              description: bestVideo.snippet.description || `Learn about ${cleanSubject} career opportunities`,
+              title: bestVideo.snippet.title,
+              description: bestVideo.snippet.description,
               thumbnailUrl: bestVideo.snippet.thumbnails?.medium?.url || bestVideo.snippet.thumbnails?.default?.url,
               url: `https://youtube.com/watch?v=${bestVideo.id.videoId}`,
-              channelTitle: bestVideo.snippet.channelTitle || 'Career Development'
+              channelTitle: bestVideo.snippet.channelTitle
             }
           }
         });
