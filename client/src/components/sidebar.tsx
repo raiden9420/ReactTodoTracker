@@ -59,12 +59,12 @@ export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: S
         <div className="flex items-center gap-3 px-2 py-3">
           <Avatar className="h-10 w-10 border border-border flex-shrink-0">
             <AvatarImage src={profile?.avatar} alt="User avatar" />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarFallback>{profile?.name?.[0] || ''}</AvatarFallback>
           </Avatar>
 
           <div className="flex flex-col min-w-0">
-            <span className="font-semibold text-sm truncate">{profile?.name || 'User'}</span>
-            <span className="text-xs text-sidebar-foreground/60 truncate">{profile?.journey || 'Getting Started'}</span>
+            <span className="font-semibold text-sm truncate">{profile?.name}</span>
+            <span className="text-xs text-sidebar-foreground/60 truncate">{profile?.journey}</span>
           </div>
         </div>
 
