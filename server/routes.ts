@@ -306,7 +306,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         try {
           if (!YOUTUBE_API_KEY) {
-            throw new Error('YouTube API key not configured');
+            // Provide a static recommendation if no API key
+            return res.status(200).json({
+              success: true,
+              data: {
+                video: {
+                  title: `${cleanSubject} Career Guide`,
+                  description: `Essential career development tips and strategies for ${cleanSubject}`,
+                  thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+                  url: `https://www.youtube.com/results?search_query=${searchQuery}`,
+                  channelTitle: "Career Development"
+                }
+              }
+            });
           }
 
           // Fetch relevant videos from YouTube with specific parameters
@@ -318,50 +330,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
             `&videoEmbeddable=true&safeSearch=strict`
           );
 
-          console.log('YouTube search query:', searchQuery);
-
           if (!youtubeResponse.ok) {
-            console.error(`YouTube API error: ${youtubeResponse.statusText}`);
             throw new Error(`YouTube API error: ${youtubeResponse.statusText}`);
           }
 
           const youtubeData = await youtubeResponse.json();
-          console.log('YouTube API Response:', JSON.stringify(youtubeData, null, 2));
 
           if (youtubeData.error) {
-            console.error("YouTube API error:", youtubeData.error);
             throw new Error(youtubeData.error.message);
           }
 
           const videos = youtubeData.items;
           if (!videos || videos.length === 0) {
-            console.error("No videos found in response");
             throw new Error("No video recommendations found");
           }
 
-          // Select the most relevant video based on title and view count
           const bestVideo = videos[0];
-          console.log('Selected video:', bestVideo);
-
-          if (!bestVideo || !bestVideo.id || !bestVideo.id.videoId || !bestVideo.snippet) {
-            throw new Error('Invalid video data received from YouTube API');
+          if (!bestVideo?.id?.videoId || !bestVideo?.snippet) {
+            throw new Error('Invalid video data received');
           }
 
-          const videoData = {
+          return res.status(200).json({
             success: true,
             data: {
               video: {
-                title: bestVideo.snippet.title || 'Career Development Video',
-                description: bestVideo.snippet.description || `Learn about ${primarySubject} career opportunities`,
+                title: bestVideo.snippet.title || `${cleanSubject} Career Guide`,
+                description: bestVideo.snippet.description || `Learn about ${cleanSubject} career opportunities`,
                 thumbnailUrl: bestVideo.snippet.thumbnails?.medium?.url || bestVideo.snippet.thumbnails?.default?.url,
                 url: `https://youtube.com/watch?v=${bestVideo.id.videoId}`,
-                channelTitle: bestVideo.snippet.channelTitle || 'Career Channel',
-              },
-            },
-          };
-
-          console.log('Sending video data:', JSON.stringify(videoData, null, 2));
-          return res.status(200).json(videoData);
+                channelTitle: bestVideo.snippet.channelTitle || 'Career Development'
+              }
+            }
+          });
         } catch (error) {
           console.error("Error getting recommendations:", error);
           // Return a fallback video recommendation
