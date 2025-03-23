@@ -48,6 +48,15 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
 
       if (videoData.success && videoData.data.video) {
         setVideo(videoData.data.video);
+      } else {
+        // Set default video if no recommendation available
+        setVideo({
+          title: "Career Development Essentials",
+          description: "Learn the fundamentals of career planning and growth",
+          url: "https://www.youtube.com/results?search_query=career+development+essentials",
+          thumbnailUrl: "https://img.youtube.com/vi/default/mqdefault.jpg",
+          channelTitle: "Career Development"
+        });
       }
 
       // Fetch course recommendation

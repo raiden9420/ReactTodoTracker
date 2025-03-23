@@ -260,51 +260,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
-        // Get both user and profile
         const user = await storage.getUser(userId);
-        if (!user) {
-          return res.status(200).json({
-            success: true,
-            data: {
-              video: null,
-            },
-          });
-        }
-
         const profile = await storage.getUserProfile(userId);
-        if (!profile || !profile.subjects || !profile.interests) {
-          return res.status(200).json({
-            success: true,
-            data: {
-              video: null,
-            },
-          });
+
+        // Prepare default recommendations based on basic career guidance
+        const defaultRecommendations = {
+          success: true,
+          data: {
+            video: {
+              title: "Career Development Fundamentals",
+              description: "Essential strategies for professional growth",
+              thumbnailUrl: "https://img.youtube.com/vi/default/mqdefault.jpg",
+              url: "https://www.youtube.com/results?search_query=career+development+guide",
+              channelTitle: "Career Development"
+            }
+          }
+        };
+
+        // Return defaults if no user or profile
+        if (!user || !profile || !profile.subjects) {
+          return res.status(200).json(defaultRecommendations);
         }
 
-        // Get primary subject and ensure data exists
-        const primarySubject = profile.subjects[0] || "career development";
-        const interests =
-          profile.interests?.split(",")[0]?.trim() ||
-          "professional development";
+        // Clean and prepare search terms
+        const primarySubject = profile.subjects[0]?.toLowerCase().trim() || "career development";
+        const cleanSubject = primarySubject.replace(/[^\w\s-]/g, '');
+        const searchQuery = encodeURIComponent(`${cleanSubject} career guide professional development`);
 
-        // Check for YouTube API key
-        const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-        try {
-          // Provide a default video recommendation
-          const defaultVideo = {
-            title: `${cleanSubject} Career Guide`,
-            description: `Essential career development tips and strategies for ${cleanSubject}`,
-            thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-            url: `https://www.youtube.com/results?search_query=${searchQuery}`,
-            channelTitle: "Career Development"
-          };
+        // Generate personalized video recommendation
+        const videoRecommendation = {
+          title: `${cleanSubject.charAt(0).toUpperCase() + cleanSubject.slice(1)} Career Guide`,
+          description: `Essential ${cleanSubject} career development strategies and tips`,
+          thumbnailUrl: `https://img.youtube.com/vi/default-${cleanSubject}/mqdefault.jpg`,
+          url: `https://www.youtube.com/results?search_query=${searchQuery}`,
+          channelTitle: "Career Development"
+        };
 
-          if (!YOUTUBE_API_KEY) {
-            return res.status(200).json({
-              success: true,
-              data: { video: defaultVideo }
-            });
+        return res.status(200).json({
+          success: true,
+          data: {
+            video: videoRecommendation
           }
+        });
+      } catch (error) {
+        console.error("Error getting video recommendations:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to get video recommendations",
+        });
+      }
+    },
+  );
 
           // Generate targeted search query based on profile
           const skills = profile.skills ? profile.skills.join(' ') : '';
