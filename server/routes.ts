@@ -314,10 +314,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
 
           if (!youtubeResponse.ok) {
+            console.error(`YouTube API error: ${youtubeResponse.statusText}`);
             throw new Error(`YouTube API error: ${youtubeResponse.statusText}`);
           }
 
           const youtubeData = await youtubeResponse.json();
+          console.log('YouTube API Response:', JSON.stringify(youtubeData, null, 2));
 
           if (youtubeData.error) {
             console.error("YouTube API error:", youtubeData.error);
@@ -326,13 +328,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           const videos = youtubeData.items;
           if (!videos || videos.length === 0) {
+            console.error("No videos found in response");
             throw new Error("No video recommendations found");
           }
 
           // Select the most relevant video based on title and view count
           const bestVideo = videos[0];
+          console.log('Selected video:', bestVideo);
 
-          return res.status(200).json({
+          const videoData = {
             success: true,
             data: {
               video: {
@@ -343,7 +347,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 channelTitle: bestVideo.snippet.channelTitle,
               },
             },
-          });
+          };
+
+          console.log('Sending video data:', videoData);
+          return res.status(200).json(videoData);
         } catch (error) {
           console.error("Error getting recommendations:", error);
           // Return a fallback video recommendation
