@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LayoutDashboard, Briefcase, GraduationCap, MessageSquare, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button"; // Added import statement
 
 type NavItem = {
   label: string;
