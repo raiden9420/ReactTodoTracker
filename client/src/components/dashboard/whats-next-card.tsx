@@ -1,6 +1,3 @@
-
-import { openLinkedInJobs } from "@/components/ui/command";
-
 import { useState, useEffect } from "react";
 import { BookOpen, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,22 +85,14 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Personalized Recommendations</CardTitle>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => openLinkedInJobs(course?.title || '')}
-          >
-            Job Matches
-          </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={fetchRecommendations}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={fetchRecommendations}
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
