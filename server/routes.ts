@@ -303,31 +303,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         try {
           // Fetch video recommendations from YouTube
-          const youtubeResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`,
-          );
+          try {
+      const youtubeResponse = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`,
+      );
 
-          const youtubeData = await youtubeResponse.json();
+      if (!youtubeResponse.ok) {
+        throw new Error(`YouTube API error: ${youtubeResponse.statusText}`);
+      }
 
-          if (youtubeData.error) {
-            console.error("YouTube API error:", youtubeData.error);
-            // Return a fallback video recommendation
-            return res.status(200).json({
-              success: true,
-              data: {
-                video: {
-                  title: "Career Development Fundamentals",
-                  description: "Learn essential skills for career growth",
-                  url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                },
-              },
-            });
-          }
+      const youtubeData = await youtubeResponse.json();
 
-          const video = youtubeData.items?.[0];
-          if (!video) {
-            throw new Error("No video recommendations found");
-          }
+      if (youtubeData.error) {
+        console.error("YouTube API error:", youtubeData.error);
+        throw new Error(youtubeData.error.message);
+      }
+
+      const video = youtubeData.items?.[0];
+      if (!video) {
+        throw new Error("No video recommendations found");
+      }
 
           return res.status(200).json({
             success: true,
@@ -341,13 +336,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (error) {
           console.error("Error getting recommendations:", error);
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : "Failed to get recommendations";
-          return res.status(500).json({
-            success: false,
-            message: errorMessage,
+          // Return a fallback video recommendation
+          return res.status(200).json({
+            success: true,
+            data: {
+              video: {
+                title: `${primarySubject} Career Guide`,
+                description: `Learn about career opportunities in ${primarySubject}`,
+                url: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${primarySubject} career guide`)}`,
+              },
+            },
           });
         }
       } catch (error) {
