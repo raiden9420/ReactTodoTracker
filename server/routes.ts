@@ -363,8 +363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           });
         } catch (error) {
-          console.error("Error getting recommendations:", error);
-          // Return a fallback video recommendation on error
+          console.error("Error getting video recommendations:", error);
           return res.status(200).json({
             success: true,
             data: {
@@ -378,12 +377,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           });
         }
-          } catch (error) {
-        console.error("Error getting video recommendations:", error);
-        return res.status(500).json({
-          success: false,
-          message: "Failed to get video recommendations",
-        });
       }
     },
   );
