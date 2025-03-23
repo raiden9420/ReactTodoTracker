@@ -287,32 +287,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ');
 
-        // Generate personalized recommendations based on user profile
-        const videoTitles = {
-          'software development': 'Building Your Software Development Portfolio',
-          'data science': 'Getting Started with Data Science Projects',
-          'web development': 'Modern Web Development Practices',
-          'machine learning': 'Machine Learning Career Path',
-          'design': 'UX/UI Design Career Guide',
-          'cybersecurity': 'Cybersecurity Career Essentials'
-        };
-
-        const defaultTitle = 'Tech Career Development Guide';
-        const videoTitle = videoTitles[cleanSubject.toLowerCase()] || defaultTitle;
-
         const videoRecommendation = {
-          title: videoTitle,
-          description: `Learn essential ${cleanSubject} skills and strategies for career growth. Expert-curated content to help you advance in your career.`,
-          thumbnailUrl: `https://placehold.co/320x180?text=${encodeURIComponent(videoTitle)}`,
+          title: `${formattedSubject} Career Guide`,
+          description: `Learn essential ${cleanSubject} skills and strategies for career growth`,
+          thumbnailUrl: `https://placehold.co/320x180?text=${encodeURIComponent(formattedSubject)}`,
           url: `https://replit.com/learn/${encodeURIComponent(cleanSubject)}`,
-          channelTitle: "Replit Career Academy"
+          channelTitle: "Replit Learning"
         };
 
-        // Return personalized recommendation
-        return res.status(200).json({
-          success: true,
-          data: { video: videoRecommendation }
-        });
+        // Generate targeted search query based on profile
         const interests = profile.interests ? profile.interests.join(' ') : '';
         const skills = profile.skills ? profile.skills.join(' ') : '';
         const cleanInterests = interests.replace(/[^\w\s]/g, '');

@@ -54,11 +54,11 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
         setVideo(videoData.data.video);
       } else {
         setVideo({
-          title: "Professional Development Fundamentals",
-          description: "Master the essential skills for career success in tech",
-          url: "https://replit.com/learn/professional-development",
-          thumbnailUrl: "https://placehold.co/320x180?text=Professional+Development",
-          channelTitle: "Replit Career Academy"
+          title: "Career Development Essentials",
+          description: "Learn the fundamentals of career planning and growth",
+          url: "https://replit.com/learn",
+          thumbnailUrl: "https://placehold.co/320x180?text=Career+Development",
+          channelTitle: "Replit Learning"
         });
       }
 
