@@ -172,7 +172,7 @@ export default function Dashboard() {
         {/* Dashboard Content */}
         <div className="p-4 sm:p-6 space-y-6">
           <WelcomeSection 
-            username={dashboardData?.username || "User"} 
+            username={dashboardData?.user?.username || dashboardData?.username || "User"} 
           />
 
           {/* Dashboard Grids */}
