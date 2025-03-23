@@ -296,15 +296,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
-        // Generate more specific search query based on profile data
+        // Generate targeted search query based on profile
+        const skills = profile.skills ? profile.skills.join(' ') : '';
         const searchQuery = encodeURIComponent(
-          `${primarySubject} ${interests} career tips and tutorials ${profile.skills || ''}`
-        );
+          `${primarySubject} ${interests} ${skills} career tutorial guide`
+        ).trim();
 
         try {
-          // Fetch video recommendations from YouTube
+          // Fetch relevant videos from YouTube with specific parameters
           const youtubeResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance&videoType=any&safeSearch=strict`,
+            `https://www.googleapis.com/youtube/v3/search?` + 
+            `part=snippet&q=${searchQuery}&type=video&maxResults=3` +
+            `&key=${YOUTUBE_API_KEY}&relevanceLanguage=en` +
+            `&videoDuration=medium&order=viewCount` + 
+            `&videoType=any&regionCode=US` +
+            `&videoEmbeddable=true&safeSearch=strict`
           );
 
           if (!youtubeResponse.ok) {
@@ -318,18 +324,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             throw new Error(youtubeData.error.message);
           }
 
-          const video = youtubeData.items?.[0];
-          if (!video) {
+          const videos = youtubeData.items;
+          if (!videos || videos.length === 0) {
             throw new Error("No video recommendations found");
           }
+
+          // Select the most relevant video based on title and view count
+          const bestVideo = videos[0];
 
           return res.status(200).json({
             success: true,
             data: {
               video: {
-                title: video.snippet.title,
-                description: video.snippet.description,
-                url: `https://youtube.com/watch?v=${video.id.videoId}`,
+                title: bestVideo.snippet.title,
+                description: bestVideo.snippet.description,
+                thumbnailUrl: bestVideo.snippet.thumbnails?.medium?.url,
+                url: `https://youtube.com/watch?v=${bestVideo.id.videoId}`,
+                channelTitle: bestVideo.snippet.channelTitle,
               },
             },
           });
