@@ -68,20 +68,6 @@ export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: S
           </div>
         </div>
 
-        {/* Progress Section */}
-        <div className="mt-8 space-y-1.5 px-2">
-          <div className="flex justify-between items-center mb-1.5">
-            <h3 className="text-sm font-medium">Career Growth</h3>
-            <span className="text-xs">{profile.progress}%</span>
-          </div>
-          <div className="h-2 w-full bg-sidebar-accent rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-sidebar-primary rounded-full" 
-              style={{ width: `${profile.progress}%` }}
-            ></div>
-          </div>
-        </div>
-
         {/* Navigation */}
         <nav className="mt-8">
           <div className="px-2 mb-2">
