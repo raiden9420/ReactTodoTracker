@@ -298,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           `part=snippet&q=${searchQuery}&type=video&maxResults=5` +
           `&key=${process.env.YOUTUBE_API_KEY}&relevanceLanguage=en` +
           `&videoDuration=medium&order=relevance` + 
-          `&videoEmbeddable=true&safeSearch=strict`
+          `&videoEmbeddable=true&safeSearch=strict&maxResults=1`
         );
 
         if (!youtubeResponse.ok) {
