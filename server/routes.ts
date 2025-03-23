@@ -289,37 +289,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Check for YouTube API key
         const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-        if (!YOUTUBE_API_KEY) {
-          return res.status(500).json({
-            success: false,
-            message: "YouTube API key not configured",
-          });
-        }
-
-        // Generate targeted search query based on profile
-        const skills = profile.skills ? profile.skills.join(' ') : '';
-        const cleanSubject = primarySubject.replace(/[^\w\s]/g, '');
-        const cleanInterests = interests.replace(/[^\w\s]/g, '');
-        const searchQuery = encodeURIComponent(
-          `${cleanSubject} ${cleanInterests} tutorial career guide`
-        ).trim();
-
         try {
+          // Provide a default video recommendation
+          const defaultVideo = {
+            title: `${cleanSubject} Career Guide`,
+            description: `Essential career development tips and strategies for ${cleanSubject}`,
+            thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+            url: `https://www.youtube.com/results?search_query=${searchQuery}`,
+            channelTitle: "Career Development"
+          };
+
           if (!YOUTUBE_API_KEY) {
-            // Provide a static recommendation if no API key
             return res.status(200).json({
               success: true,
-              data: {
-                video: {
-                  title: `${cleanSubject} Career Guide`,
-                  description: `Essential career development tips and strategies for ${cleanSubject}`,
-                  thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-                  url: `https://www.youtube.com/results?search_query=${searchQuery}`,
-                  channelTitle: "Career Development"
-                }
-              }
+              data: { video: defaultVideo }
             });
           }
+
+          // Generate targeted search query based on profile
+          const skills = profile.skills ? profile.skills.join(' ') : '';
+          const cleanSubject = primarySubject.replace(/[^\w\s]/g, '');
+          const cleanInterests = interests.replace(/[^\w\s]/g, '');
+          const searchQuery = encodeURIComponent(
+            `${cleanSubject} ${cleanInterests} tutorial career guide`
+          ).trim();
+
 
           // Fetch relevant videos from YouTube with specific parameters
           const youtubeResponse = await fetch(
@@ -364,16 +358,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (error) {
           console.error("Error getting recommendations:", error);
-          // Return a fallback video recommendation
+          // Return a fallback video recommendation on error
           return res.status(200).json({
             success: true,
             data: {
               video: {
-                title: `${primarySubject} Career Guide`,
-                description: `Learn about career opportunities in ${primarySubject}`,
-                url: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${primarySubject} career guide`)}`,
-              },
-            },
+                title: "Career Development Guide",
+                description: "Essential career development tips and strategies",
+                thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+                url: "https://www.youtube.com/results?search_query=career+development",
+                channelTitle: "Career Development"
+              }
+            }
           });
         }
           } catch (error) {
