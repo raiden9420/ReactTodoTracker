@@ -35,7 +35,15 @@ export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: S
 
   const navItems: NavItem[] = [
     { label: "Dashboard", href: "/", icon: <LayoutDashboard className="w-4 h-4" />, active: true },
-    { label: "Job Matches", href: "#jobs", icon: <Briefcase className="w-4 h-4" /> },
+    { 
+      label: "Job Matches", 
+      href: "#", 
+      icon: <Briefcase className="w-4 h-4" />,
+      onClick: () => {
+        const searchQuery = profile.subjects?.join(' ') || profile.journey || '';
+        window.open(`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(searchQuery)}`, '_blank');
+      }
+    },
     { label: "Learning", href: "#learning", icon: <GraduationCap className="w-4 h-4" /> },
     { label: "Career Coach", href: "#", icon: <MessageSquare className="w-4 h-4" />, onClick: onCareerCoachClick },
     { label: "Settings", href: "#settings", icon: <Settings className="w-4 h-4" /> },
@@ -60,18 +68,6 @@ export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: S
             <span className="text-xs text-sidebar-foreground/60 truncate">{profile.journey}</span>
           </div>
         </div>
-
-        {/* Job Matches Button */}
-        <Button 
-          variant="outline"
-          className="mt-4 w-full"
-          onClick={() => {
-            const searchQuery = profile.subjects?.join(' ') || profile.journey || '';
-            window.open(`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(searchQuery)}`, '_blank');
-          }}
-        >
-          Job Matches
-        </Button>
 
         {/* Progress Section */}
         <div className="mt-8 space-y-1.5 px-2">
