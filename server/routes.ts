@@ -296,17 +296,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           channelTitle: "Career Development"
         };
 
-        //This section was moved outside the try-catch block to fix the unexpected catch error
-        const interests = profile.interests ? profile.interests.join(' ') : '';
-
         // Generate targeted search query based on profile
+        const interests = profile.interests ? profile.interests.join(' ') : '';
         const skills = profile.skills ? profile.skills.join(' ') : '';
-        const cleanSubject = primarySubject.replace(/[^\w\s]/g, '');
         const cleanInterests = interests.replace(/[^\w\s]/g, '');
-        const searchQuery = encodeURIComponent(
+
+        // Update searchQuery to include skills
+        searchQuery = encodeURIComponent(
           `${cleanSubject} ${cleanInterests} tutorial career guide`
         ).trim();
-
 
         // Fetch relevant videos from YouTube with specific parameters
         const youtubeResponse = await fetch(
