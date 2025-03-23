@@ -108,6 +108,11 @@ export default function CareerCoachChatbot({ onClose }: CareerCoachChatbotProps)
   }, [chatHistory, messages.length]);
 
   // Handle form submission
+  const openLinkedInJobs = (subject: string) => {
+    const searchQuery = encodeURIComponent(`${subject} jobs`);
+    window.open(`https://www.linkedin.com/jobs/search/?keywords=${searchQuery}`, '_blank');
+  };
+
   const handleJobSearch = () => {
     if (userData?.subjects && userData.subjects.length > 0) {
       const primarySubject = userData.subjects[0];
