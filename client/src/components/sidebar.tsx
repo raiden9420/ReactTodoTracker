@@ -27,19 +27,13 @@ type SidebarProps = {
 };
 
 export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: SidebarProps) {
-  const [username, setUsername] = useState("User");
+  const [username, setUsername] = useState(profile?.name || "User");
 
   useEffect(() => {
-    // Fetch user data when component mounts
-    fetch('/api/user/1') // Using default user ID 1
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.user?.username) {
-          setUsername(data.user.username);
-        }
-      })
-      .catch(err => console.error('Error fetching user:', err));
-  }, []);
+    if (profile?.name) {
+      setUsername(profile.name);
+    }
+  }, [profile]);
 
   const [recentItems] = useState([
     { id: 1, name: "Career Assessments", href: "#assessments" },
