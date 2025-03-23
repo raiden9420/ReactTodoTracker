@@ -27,6 +27,20 @@ type SidebarProps = {
 };
 
 export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: SidebarProps) {
+  const [username, setUsername] = useState("User");
+
+  useEffect(() => {
+    // Fetch user data when component mounts
+    fetch('/api/user/1') // Using default user ID 1
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.user?.username) {
+          setUsername(data.user.username);
+        }
+      })
+      .catch(err => console.error('Error fetching user:', err));
+  }, []);
+
   const [recentItems] = useState([
     { id: 1, name: "Career Assessments", href: "#assessments" },
     { id: 2, name: "Industry Insights", href: "#insights" },
@@ -55,7 +69,13 @@ export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: S
       }`}
     >
       <div className="sticky top-0 flex flex-col h-full p-4 overflow-y-auto">
-        
+        <div className="flex items-center space-x-2 px-2">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={profile?.avatar} />
+            <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <span className="font-medium">{username}</span>
+        </div>
 
         {/* Navigation */}
         <nav className="mt-8">
