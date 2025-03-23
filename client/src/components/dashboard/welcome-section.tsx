@@ -1,14 +1,15 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import { User } from '@/lib/types';
 
 type WelcomeSectionProps = {
-  username: string;
+  user: User;
 };
 
-export function WelcomeSection({ username }: WelcomeSectionProps) {
+export function WelcomeSection({ user }: WelcomeSectionProps) {
   return (
     <div className="flex items-center gap-4 p-6 bg-card rounded-lg">
       <div>
-        <h2 className="text-2xl font-semibold">Welcome back, {username}!</h2>
+        <h2 className="text-2xl font-semibold">Welcome back, {user.name}!</h2>
       </div>
     </div>
   );
