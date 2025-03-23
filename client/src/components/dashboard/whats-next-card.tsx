@@ -46,16 +46,19 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
       const videoResponse = await fetch(`/api/personalized-recommendations/${userId}`);
       const videoData = await videoResponse.json();
 
-      if (videoData.success && videoData.data.video) {
+      if (!videoResponse.ok) {
+        throw new Error('Failed to fetch video recommendations');
+      }
+
+      if (videoData.success && videoData.data?.video) {
         setVideo(videoData.data.video);
       } else {
-        // Set default video if no recommendation available
         setVideo({
           title: "Career Development Essentials",
           description: "Learn the fundamentals of career planning and growth",
-          url: "https://www.youtube.com/results?search_query=career+development+essentials",
-          thumbnailUrl: "https://img.youtube.com/vi/default/mqdefault.jpg",
-          channelTitle: "Career Development"
+          url: "https://replit.com/learn",
+          thumbnailUrl: "https://placehold.co/320x180?text=Career+Development",
+          channelTitle: "Replit Learning"
         });
       }
 

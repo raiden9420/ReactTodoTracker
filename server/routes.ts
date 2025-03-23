@@ -263,37 +263,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const user = await storage.getUser(userId);
         const profile = await storage.getUserProfile(userId);
 
-        // Prepare default recommendations based on basic career guidance
-        const defaultRecommendations = {
-          success: true,
-          data: {
-            video: {
-              title: "Career Development Fundamentals",
-              description: "Essential strategies for professional growth",
-              thumbnailUrl: "https://img.youtube.com/vi/default/mqdefault.jpg",
-              url: "https://www.youtube.com/results?search_query=career+development+guide",
-              channelTitle: "Career Development"
-            }
-          }
+        // Default video recommendation
+        const defaultVideo = {
+          title: "Career Development Fundamentals",
+          description: "Essential strategies for professional growth",
+          thumbnailUrl: "https://placehold.co/320x180?text=Career+Development",
+          url: "https://replit.com/learn",
+          channelTitle: "Career Development"
         };
 
         // Return defaults if no user or profile
         if (!user || !profile || !profile.subjects) {
-          return res.status(200).json(defaultRecommendations);
+          return res.status(200).json({
+            success: true,
+            data: { video: defaultVideo }
+          });
         }
 
-        // Clean and prepare search terms
+        // Generate personalized recommendation based on profile
         const primarySubject = profile.subjects[0]?.toLowerCase().trim() || "career development";
         const cleanSubject = primarySubject.replace(/[^\w\s-]/g, '');
-        const searchQuery = encodeURIComponent(`${cleanSubject} career guide professional development`);
+        const formattedSubject = cleanSubject.split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
 
-        // Generate personalized video recommendation
         const videoRecommendation = {
-          title: `${cleanSubject.charAt(0).toUpperCase() + cleanSubject.slice(1)} Career Guide`,
-          description: `Essential ${cleanSubject} career development strategies and tips`,
-          thumbnailUrl: `https://img.youtube.com/vi/default-${cleanSubject}/mqdefault.jpg`,
-          url: `https://www.youtube.com/results?search_query=${searchQuery}`,
-          channelTitle: "Career Development"
+          title: `${formattedSubject} Career Guide`,
+          description: `Learn essential ${cleanSubject} skills and strategies for career growth`,
+          thumbnailUrl: `https://placehold.co/320x180?text=${encodeURIComponent(formattedSubject)}`,
+          url: `https://replit.com/learn/${encodeURIComponent(cleanSubject)}`,
+          channelTitle: "Replit Learning"
         };
 
         // Generate targeted search query based on profile
