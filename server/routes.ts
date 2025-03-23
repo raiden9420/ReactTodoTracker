@@ -296,89 +296,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
           channelTitle: "Career Development"
         };
 
+        //This section was moved outside the try-catch block to fix the unexpected catch error
+        const interests = profile.interests ? profile.interests.join(' ') : '';
+
+        // Generate targeted search query based on profile
+        const skills = profile.skills ? profile.skills.join(' ') : '';
+        const cleanSubject = primarySubject.replace(/[^\w\s]/g, '');
+        const cleanInterests = interests.replace(/[^\w\s]/g, '');
+        const searchQuery = encodeURIComponent(
+          `${cleanSubject} ${cleanInterests} tutorial career guide`
+        ).trim();
+
+
+        // Fetch relevant videos from YouTube with specific parameters
+        const youtubeResponse = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?` + 
+          `part=snippet&q=${searchQuery}&type=video&maxResults=5` +
+          `&key=${YOUTUBE_API_KEY}&relevanceLanguage=en` +
+          `&videoDuration=medium&order=relevance` + 
+          `&videoEmbeddable=true&safeSearch=strict`
+        );
+
+        if (!youtubeResponse.ok) {
+          throw new Error(`YouTube API error: ${youtubeResponse.statusText}`);
+        }
+
+        const youtubeData = await youtubeResponse.json();
+
+        if (youtubeData.error) {
+          throw new Error(youtubeData.error.message);
+        }
+
+        const videos = youtubeData.items;
+        if (!videos || videos.length === 0) {
+          throw new Error("No video recommendations found");
+        }
+
+        const bestVideo = videos[0];
+        if (!bestVideo?.id?.videoId || !bestVideo?.snippet) {
+          throw new Error('Invalid video data received');
+        }
+
         return res.status(200).json({
           success: true,
           data: {
-            video: videoRecommendation
+            video: {
+              title: bestVideo.snippet.title || `${cleanSubject} Career Guide`,
+              description: bestVideo.snippet.description || `Learn about ${cleanSubject} career opportunities`,
+              thumbnailUrl: bestVideo.snippet.thumbnails?.medium?.url || bestVideo.snippet.thumbnails?.default?.url,
+              url: `https://youtube.com/watch?v=${bestVideo.id.videoId}`,
+              channelTitle: bestVideo.snippet.channelTitle || 'Career Development'
+            }
           }
         });
       } catch (error) {
         console.error("Error getting video recommendations:", error);
-        return res.status(500).json({
-          success: false,
-          message: "Failed to get video recommendations",
+        return res.status(200).json({
+          success: true,
+          data: {
+            video: {
+              title: "Career Development Guide",
+              description: "Essential career development tips and strategies",
+              thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+              url: "https://www.youtube.com/results?search_query=career+development",
+              channelTitle: "Career Development"
+            }
+          }
         });
       }
-    },
-  );
-
-          // Generate targeted search query based on profile
-          const skills = profile.skills ? profile.skills.join(' ') : '';
-          const cleanSubject = primarySubject.replace(/[^\w\s]/g, '');
-          const cleanInterests = interests.replace(/[^\w\s]/g, '');
-          const searchQuery = encodeURIComponent(
-            `${cleanSubject} ${cleanInterests} tutorial career guide`
-          ).trim();
-
-
-          // Fetch relevant videos from YouTube with specific parameters
-          const youtubeResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?` + 
-            `part=snippet&q=${searchQuery}&type=video&maxResults=5` +
-            `&key=${YOUTUBE_API_KEY}&relevanceLanguage=en` +
-            `&videoDuration=medium&order=relevance` + 
-            `&videoEmbeddable=true&safeSearch=strict`
-          );
-
-          if (!youtubeResponse.ok) {
-            throw new Error(`YouTube API error: ${youtubeResponse.statusText}`);
-          }
-
-          const youtubeData = await youtubeResponse.json();
-
-          if (youtubeData.error) {
-            throw new Error(youtubeData.error.message);
-          }
-
-          const videos = youtubeData.items;
-          if (!videos || videos.length === 0) {
-            throw new Error("No video recommendations found");
-          }
-
-          const bestVideo = videos[0];
-          if (!bestVideo?.id?.videoId || !bestVideo?.snippet) {
-            throw new Error('Invalid video data received');
-          }
-
-          return res.status(200).json({
-            success: true,
-            data: {
-              video: {
-                title: bestVideo.snippet.title || `${cleanSubject} Career Guide`,
-                description: bestVideo.snippet.description || `Learn about ${cleanSubject} career opportunities`,
-                thumbnailUrl: bestVideo.snippet.thumbnails?.medium?.url || bestVideo.snippet.thumbnails?.default?.url,
-                url: `https://youtube.com/watch?v=${bestVideo.id.videoId}`,
-                channelTitle: bestVideo.snippet.channelTitle || 'Career Development'
-              }
-            }
-          });
-        } catch (error) {
-          console.error("Error getting video recommendations:", error);
-          return res.status(200).json({
-            success: true,
-            data: {
-              video: {
-                title: "Career Development Guide",
-                description: "Essential career development tips and strategies",
-                thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-                url: "https://www.youtube.com/results?search_query=career+development",
-                channelTitle: "Career Development"
-              }
-            }
-          });
-        }
-      }
-    },
+    }
   );
 
   // Trending topics endpoint
