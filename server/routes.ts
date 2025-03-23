@@ -298,20 +298,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Generate targeted search query based on profile
         const skills = profile.skills ? profile.skills.join(' ') : '';
+        const cleanSubject = primarySubject.replace(/[^\w\s]/g, '');
+        const cleanInterests = interests.replace(/[^\w\s]/g, '');
         const searchQuery = encodeURIComponent(
-          `${primarySubject} ${interests} ${skills} career tutorial guide`
+          `${cleanSubject} ${cleanInterests} tutorial career guide`
         ).trim();
 
         try {
+          if (!YOUTUBE_API_KEY) {
+            throw new Error('YouTube API key not configured');
+          }
+
           // Fetch relevant videos from YouTube with specific parameters
           const youtubeResponse = await fetch(
             `https://www.googleapis.com/youtube/v3/search?` + 
-            `part=snippet&q=${searchQuery}&type=video&maxResults=3` +
+            `part=snippet&q=${searchQuery}&type=video&maxResults=5` +
             `&key=${YOUTUBE_API_KEY}&relevanceLanguage=en` +
-            `&videoDuration=medium&order=viewCount` + 
-            `&videoType=any&regionCode=US` +
+            `&videoDuration=medium&order=relevance` + 
             `&videoEmbeddable=true&safeSearch=strict`
           );
+
+          console.log('YouTube search query:', searchQuery);
 
           if (!youtubeResponse.ok) {
             console.error(`YouTube API error: ${youtubeResponse.statusText}`);
@@ -336,20 +343,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const bestVideo = videos[0];
           console.log('Selected video:', bestVideo);
 
+          if (!bestVideo || !bestVideo.id || !bestVideo.id.videoId || !bestVideo.snippet) {
+            throw new Error('Invalid video data received from YouTube API');
+          }
+
           const videoData = {
             success: true,
             data: {
               video: {
-                title: bestVideo.snippet.title,
-                description: bestVideo.snippet.description,
-                thumbnailUrl: bestVideo.snippet.thumbnails?.medium?.url,
+                title: bestVideo.snippet.title || 'Career Development Video',
+                description: bestVideo.snippet.description || `Learn about ${primarySubject} career opportunities`,
+                thumbnailUrl: bestVideo.snippet.thumbnails?.medium?.url || bestVideo.snippet.thumbnails?.default?.url,
                 url: `https://youtube.com/watch?v=${bestVideo.id.videoId}`,
-                channelTitle: bestVideo.snippet.channelTitle,
+                channelTitle: bestVideo.snippet.channelTitle || 'Career Channel',
               },
             },
           };
 
-          console.log('Sending video data:', videoData);
+          console.log('Sending video data:', JSON.stringify(videoData, null, 2));
           return res.status(200).json(videoData);
         } catch (error) {
           console.error("Error getting recommendations:", error);
