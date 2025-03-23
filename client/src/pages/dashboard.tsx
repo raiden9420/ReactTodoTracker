@@ -171,10 +171,6 @@ export default function Dashboard() {
 
         {/* Dashboard Content */}
         <div className="p-4 sm:p-6 space-y-6">
-          <WelcomeSection 
-            username={dashboardData?.username} 
-          />
-
           {/* Dashboard Grids */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <GoalsCard goals={goals} userId={parseInt(userId)} />
