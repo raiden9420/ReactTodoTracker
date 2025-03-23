@@ -296,15 +296,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
-        // Generate search query based on profile
+        // Generate more specific search query based on profile data
         const searchQuery = encodeURIComponent(
-          `${primarySubject} ${interests} career guide 2024`,
+          `${primarySubject} ${interests} career tips and tutorials ${profile.skills || ''}`
         );
 
         try {
           // Fetch video recommendations from YouTube
           const youtubeResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`,
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance&videoType=any&safeSearch=strict`,
           );
 
           if (!youtubeResponse.ok) {
