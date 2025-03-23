@@ -46,7 +46,6 @@ export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: S
     },
     { label: "Learning", href: "#learning", icon: <GraduationCap className="w-4 h-4" /> },
     { label: "Career Coach", href: "#", icon: <MessageSquare className="w-4 h-4" />, onClick: onCareerCoachClick },
-    { label: "Settings", href: "#settings", icon: <Settings className="w-4 h-4" /> },
   ];
 
   return (
@@ -112,22 +111,6 @@ export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: S
             </Link>
           ))}
         </nav>
-
-        {/* Recently Viewed */}
-        <div className="mt-8 px-2">
-          <h3 className="text-sm font-semibold mb-2">Recently Viewed</h3>
-          <div className="space-y-1">
-            {recentItems.map((item) => (
-              <div 
-                key={item.id}
-                onClick={() => window.location.href = item.href}
-                className="block py-1 px-2 text-xs rounded hover:bg-sidebar-accent transition-colors cursor-pointer"
-              >
-                {item.name}
-              </div>
-            ))}
-          </div>
-        </div>
 
         <div className="mt-auto pt-6">
           <ThemeToggle />
