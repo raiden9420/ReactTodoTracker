@@ -304,50 +304,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Fetch video recommendations from YouTube
           try {
-      const youtubeResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`,
-      );
+        const youtubeResponse = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}&relevanceLanguage=en&videoDuration=medium&order=relevance`,
+        );
 
-      if (!youtubeResponse.ok) {
-        throw new Error(`YouTube API error: ${youtubeResponse.statusText}`);
-      }
-
-      const youtubeData = await youtubeResponse.json();
-
-      if (youtubeData.error) {
-        console.error("YouTube API error:", youtubeData.error);
-        throw new Error(youtubeData.error.message);
-      }
-
-      const video = youtubeData.items?.[0];
-      if (!video) {
-        throw new Error("No video recommendations found");
-      }
-
-          return res.status(200).json({
-            success: true,
-            data: {
-              video: {
-                title: video.snippet.title,
-                description: video.snippet.description,
-                url: `https://youtube.com/watch?v=${video.id.videoId}`,
-              },
-            },
-          });
-        } catch (error) {
-          console.error("Error getting recommendations:", error);
-          // Return a fallback video recommendation
-          return res.status(200).json({
-            success: true,
-            data: {
-              video: {
-                title: `${primarySubject} Career Guide`,
-                description: `Learn about career opportunities in ${primarySubject}`,
-                url: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${primarySubject} career guide`)}`,
-              },
-            },
-          });
+        if (!youtubeResponse.ok) {
+          throw new Error(`YouTube API error: ${youtubeResponse.statusText}`);
         }
+
+        const youtubeData = await youtubeResponse.json();
+
+        if (youtubeData.error) {
+          console.error("YouTube API error:", youtubeData.error);
+          throw new Error(youtubeData.error.message);
+        }
+
+        const video = youtubeData.items?.[0];
+        if (!video) {
+          throw new Error("No video recommendations found");
+        }
+
+        return res.status(200).json({
+          success: true,
+          data: {
+            video: {
+              title: video.snippet.title,
+              description: video.snippet.description,
+              url: `https://youtube.com/watch?v=${video.id.videoId}`,
+            },
+          },
+        });
+      } catch (error) {
+        console.error("Error getting recommendations:", error);
+        // Return a fallback video recommendation
+        return res.status(200).json({
+          success: true,
+          data: {
+            video: {
+              title: `${primarySubject} Career Guide`,
+              description: `Learn about career opportunities in ${primarySubject}`,
+              url: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${primarySubject} career guide`)}`,
+            },
+          },
+        });
+      }
       } catch (error) {
         console.error("Error getting video recommendations:", error);
         return res.status(500).json({
@@ -600,7 +600,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-      
+
       // Create a context-aware prompt using user data
       const contextPrompt = `As a career coach, consider this user's profile:
 Subjects: ${userData?.subjects?.join(', ') || 'Not specified'}
@@ -612,10 +612,10 @@ Thinking Style: ${userData?.thinkingStyle || 'Not specified'}
 Based on this profile, respond to their question: ${message}
 
 Provide personalized, actionable advice that aligns with their interests and goals. Keep the response concise and practical.`;
-      
+
       const result = await model.generateContent(contextPrompt);
       const response = await result.response;
-      
+
       return res.status(200).json({
         success: true,
         response: response.text()
