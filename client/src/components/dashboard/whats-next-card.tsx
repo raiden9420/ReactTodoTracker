@@ -126,12 +126,29 @@ export function WhatsNextCard({ userId }: WhatsNextProps) {
                 <div className="rounded-md bg-primary/10 p-2">
                   <BookOpen className="h-5 w-5 text-primary" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h4 className="text-sm font-medium">Recommended Video</h4>
                   <p className="text-sm text-muted-foreground">{video.title}</p>
+                  {video.description && (
+                    <p className="text-xs text-muted-foreground mt-1">{video.description}</p>
+                  )}
+                  {video.channelTitle && (
+                    <p className="text-xs text-primary mt-1">By {video.channelTitle}</p>
+                  )}
                 </div>
               </div>
-              <Button variant="outline" className="w-full mt-3" onClick={() => window.open(video.url, '_blank')}>
+              {video.thumbnailUrl && (
+                <img 
+                  src={video.thumbnailUrl} 
+                  alt={video.title}
+                  className="w-full h-32 object-cover rounded-md mt-3"
+                />
+              )}
+              <Button 
+                variant="outline" 
+                className="w-full mt-3" 
+                onClick={() => window.open(video.url, '_blank')}
+              >
                 Watch Video
               </Button>
             </div>
