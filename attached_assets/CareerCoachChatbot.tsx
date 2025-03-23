@@ -108,6 +108,19 @@ export default function CareerCoachChatbot({ onClose }: CareerCoachChatbotProps)
   }, [chatHistory, messages.length]);
 
   // Handle form submission
+  const handleJobSearch = () => {
+    if (userData?.subjects && userData.subjects.length > 0) {
+      const primarySubject = userData.subjects[0];
+      openLinkedInJobs(primarySubject);
+    } else {
+      toast({
+        title: "No subject selected",
+        description: "Please complete your profile to search for relevant jobs.",
+        variant: "default"
+      });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     

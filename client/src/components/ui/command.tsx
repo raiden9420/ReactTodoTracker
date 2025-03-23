@@ -140,6 +140,11 @@ const CommandShortcut = ({
 }
 CommandShortcut.displayName = "CommandShortcut"
 
+export function openLinkedInJobs(subject: string) {
+  const searchQuery = encodeURIComponent(subject || 'jobs');
+  window.open(`https://www.linkedin.com/jobs/search/?keywords=${searchQuery}`, '_blank');
+}
+
 export {
   Command,
   CommandDialog,
