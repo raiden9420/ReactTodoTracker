@@ -347,6 +347,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
           });
         }
+          } catch (error) {
+        console.error("Error getting video recommendations:", error);
+        return res.status(500).json({
           success: false,
           message: "Failed to get video recommendations",
         });
