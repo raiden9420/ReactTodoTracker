@@ -1,4 +1,3 @@
-
 import { User } from '@/lib/types';
 
 type WelcomeSectionProps = {
