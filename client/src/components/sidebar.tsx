@@ -60,6 +60,18 @@ export function Sidebar({ isOpen, onOpenChange, profile, onCareerCoachClick }: S
           </div>
         </div>
 
+        {/* Job Matches Button */}
+        <Button 
+          variant="outline"
+          className="mt-4 w-full"
+          onClick={() => {
+            const searchQuery = profile.subjects?.join(' ') || profile.journey || '';
+            window.open(`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(searchQuery)}`, '_blank');
+          }}
+        >
+          Job Matches
+        </Button>
+
         {/* Progress Section */}
         <div className="mt-8 space-y-1.5 px-2">
           <div className="flex justify-between items-center mb-1.5">
